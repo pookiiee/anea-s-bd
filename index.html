@@ -1,0 +1,16 @@
+<!-- مشغل الأغنية بملف الصوت المباشر أو مقطع يوتيوب -->
+    <div class="music-player">
+        <!-- مشغل يوتيوب مخفي يبدأ من الثانية 30 -->
+        <iframe id="youtube-player" 
+                width="0" 
+                height="0" 
+                src="https://www.youtube.com/embed/B1kcMvb3qKA?start=30&enablejsapi=1" 
+                frameborder="0" 
+                allow="autoplay">
+        </iframe>
+        
+        <button id="music-btn" onclick="toggleMusic()">
+            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            <span>Play Music</span>
+        </button>
+    </div>
