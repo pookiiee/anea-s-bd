@@ -3,7 +3,7 @@
  * THE BIRTHDAY GARDEN - INTERACTION ENGINE
  * Features:
  *  - Strict Sequential Progression (Surprise Box -> Maze Path -> The Birthday Garden)
- *  - YouTube IFrame API audio player (starts @ 0:30 upon opening gift)
+ *  - High-Fidelity Audio starting @ 0:30 upon opening gift
  *  - Confetti explosion cannon
  *  - Maze Game with controls placed on the left side (character: "anea")
  *  - Real Botanical Garden with 7 friends' blooming flowers & long English letters
@@ -21,7 +21,8 @@ const GardenState = {
   musicStarted: false,
   openedLetters: new Set(),
   activePhotoIndex: 0,
-  dockCollapsed: false
+  dockCollapsed: false,
+  userPaused: false
 };
 
 // 7 Friends' Long English Birthday Letters
@@ -169,117 +170,34 @@ const GalleryPhotos = [
 
 // ==========================================================================
 // AUDIO INTEGRATION (Starts @ 0:30 from uploaded song)
-// Primary: Local High-Fidelity MP3 (assets/birthday_song.mp3)
-// Fallback: YouTube IFrame API (B1kcMvb3qKA)
 // ==========================================================================
-let ytPlayer = null;
-let ytApiReady = false;
-let shouldPlayOnReady = false;
-let initialSeekDone = false;
-
 function getAudioElement() {
   return document.getElementById('main-birthday-audio');
-}
-
-window.onYouTubeIframeAPIReady = function() {
-  ytPlayer = new YT.Player('youtube-audio-player', {
-    height: '135',
-    width: '240',
-    videoId: 'B1kcMvb3qKA',
-    playerVars: {
-      autoplay: 0,
-      controls: 1,
-      disablekb: 0,
-      fs: 0,
-      rel: 0,
-      modestbranding: 1,
-      start: 30,
-      loop: 1,
-      playlist: 'B1kcMvb3qKA',
-      playsinline: 1,
-      enablejsapi: 1
-    },
-    events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
-    }
-  });
-};
-
-function onPlayerReady(event) {
-  ytApiReady = true;
-  if (shouldPlayOnReady && !GardenState.musicStarted) {
-    startMusicPlayback();
-  }
-}
-
-function onPlayerStateChange(event) {
-  if (event.data === YT.PlayerState.PLAYING) {
-    GardenState.musicPlaying = true;
-    GardenState.musicStarted = true;
-    updateMusicUI(true);
-
-    if (!initialSeekDone) {
-      if (typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getCurrentTime() < 29.5) {
-        ytPlayer.seekTo(30, true);
-      }
-      initialSeekDone = true;
-    }
-  } else if (event.data === YT.PlayerState.ENDED) {
-    if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
-      ytPlayer.seekTo(30, true);
-      ytPlayer.playVideo();
-    }
-  } else if (event.data === YT.PlayerState.PAUSED) {
-    if (GardenState.userPaused) {
-      GardenState.musicPlaying = false;
-      updateMusicUI(false);
-    }
-  }
 }
 
 function startMusicPlayback() {
   GardenState.userPaused = false;
   const audio = getAudioElement();
 
-  // 1. Play high-fidelity local MP3 starting from 30s
   if (audio) {
     try {
-      audio.currentTime = 30;
+      if (!GardenState.musicStarted) {
+        audio.currentTime = 30; // البدء من الثانية 30
+        GardenState.musicStarted = true;
+      }
       audio.volume = 1.0;
       const promise = audio.play();
       if (promise !== undefined) {
         promise.then(() => {
-          GardenState.musicStarted = true;
           GardenState.musicPlaying = true;
           updateMusicUI(true);
-        }).catch(() => {
-          fallbackToYouTube();
+        }).catch((err) => {
+          console.log("Audio play error:", err);
         });
-        return;
       }
     } catch(e) {
-      fallbackToYouTube();
-      return;
+      console.log("Audio exception:", e);
     }
-  }
-
-  fallbackToYouTube();
-}
-
-function fallbackToYouTube() {
-  if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
-    try {
-      ytPlayer.unMute();
-      ytPlayer.setVolume(100);
-      ytPlayer.seekTo(30, true);
-      ytPlayer.playVideo();
-      GardenState.musicStarted = true;
-      GardenState.musicPlaying = true;
-      updateMusicUI(true);
-    } catch(e) {}
-  } else {
-    shouldPlayOnReady = true;
   }
 }
 
@@ -289,25 +207,11 @@ function toggleMusic() {
   if (GardenState.musicPlaying) {
     GardenState.userPaused = true;
     if (audio && !audio.paused) audio.pause();
-    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
     GardenState.musicPlaying = false;
     updateMusicUI(false);
   } else {
     GardenState.userPaused = false;
-    if (audio) {
-      if (!GardenState.musicStarted) {
-        audio.currentTime = 30;
-        GardenState.musicStarted = true;
-      }
-      audio.play().then(() => {
-        GardenState.musicPlaying = true;
-        updateMusicUI(true);
-      }).catch(() => {
-        fallbackToYouTube();
-      });
-    } else {
-      fallbackToYouTube();
-    }
+    startMusicPlayback();
   }
 }
 
@@ -322,21 +226,6 @@ function updateMusicUI(isPlaying) {
   } else {
     btn.classList.remove('playing');
     label.textContent = "Play Music";
-  }
-}
-
-function toggleDockCollapse() {
-  const widget = document.getElementById('music-dock-widget');
-  const icon = document.getElementById('dock-collapse-icon');
-  if (!widget) return;
-
-  GardenState.dockCollapsed = !GardenState.dockCollapsed;
-  if (GardenState.dockCollapsed) {
-    widget.classList.add('collapsed');
-    if (icon) icon.innerHTML = '<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>';
-  } else {
-    widget.classList.remove('collapsed');
-    if (icon) icon.innerHTML = '<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>';
   }
 }
 
