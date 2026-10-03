@@ -1,187 +1,139 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Fredoka', cursive, sans-serif;
-}
+const friendMessages = {
+    aseel: "Message from Aseel: Happy Birthday! I wanted to take a moment to wish you the most wonderful day. You bring so much calm, warmth, and peace into our lives, and having you as a friend is truly a blessing. I hope this new year of your life is filled with quiet joy, beautiful moments, and everything your heart desires. Stay amazing!",
+    
+    ary: "Message from Ary: Happy Birthday! On your special day, I just want to remind you how much you are appreciated. Your peaceful presence always makes everything better, and I am so grateful for all the quiet memories we share. May this year bring you all the quiet strength, happiness, and peace you deserve. Enjoy every single moment!",
+    
+    hiro: "Message from Hiro: Happy Birthday to one of the most gentle souls I know! Thank you for being such an incredible, reliable, and understanding friend. I hope your birthday brings you as much comfort and happiness as you constantly give to everyone around you. Wishing you a year full of success, peace, and beautiful surprises!",
+    
+    tuqa: "Message from Tuqa: Happy Birthday! Celebrating you today is so easy because you bring so much quiet light into our world. May your day be as peaceful, lovely, and kind as you are. I hope this coming year opens new doors to all the things you love and gives you endless reasons to smile. Have the happiest birthday!",
+    
+    luna: "Message from Luna: Happy Birthday! Wishing you a day filled with tranquility, laughter, and your favorite things. You have a special way of making the world feel a little calmer and brighter just by being yourself. I hope this year treats you with the utmost kindness and brings you closer to all your dreams!",
+    
+    madi: "Message from Madi: Happy Birthday! I'm so lucky to have a friend like you who understands the beauty of quiet and simple moments. Thank you for always being there and for being such a genuine friend. May your year ahead be full of peace, good energy, and wonderful memories!",
+    
+    reemy: "Message from Reemy: Happy Birthday to our amazing friend! Your calm vibe and kindness are truly irreplaceable. I hope today brings you continuous joy and a sense of deep peace. May all your goals for this year come true smoothly. Enjoy your special day to the fullest!"
+};
 
-body {
-    background-color: #2b3531;
-    color: #e2e8f0;
-    text-align: center;
-    padding: 20px;
-}
+let isPlaying = false;
 
-.hidden-section {
-    display: none;
-}
-
-.active-section {
-    display: block;
-}
-
-/* تنسيق الأيقونات SVG */
-.icon, .flower-icon {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-}
-
-/* شاشة صندوق الهدايا */
-.gift-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 75vh;
-}
-
-.gift-box {
-    cursor: pointer;
-    margin-top: 25px;
-    user-select: none;
-    animation: bounceGift 1.6s infinite ease-in-out;
-    transition: transform 0.3s ease;
-}
-
-.gift-icon {
-    width: 90px;
-    height: 90px;
-    color: #81a1c1;
-}
-
-.gift-box:hover {
-    transform: scale(1.15) rotate(4deg);
-}
-
-@keyframes bounceGift {
-    0%, 100% {
-        transform: translateY(0) scale(1);
-    }
-    50% {
-        transform: translateY(-12px) scale(1.05);
+function toggleMusic() {
+    const iframe = document.getElementById("youtube-player");
+    const btn = document.getElementById("music-btn").querySelector("span");
+    
+    if (!isPlaying) {
+        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        btn.innerText = "Pause Music";
+        isPlaying = true;
+    } else {
+        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        btn.innerText = "Play Music";
+        isPlaying = false;
     }
 }
 
-/* مشغل الأغنية */
-.music-player {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 100;
+function openGift() {
+    confetti({
+        particleCount: 120,
+        spread: 70,
+        origin: { y: 0.6 }
+    });
+
+    toggleMusic();
+
+    setTimeout(() => {
+        document.getElementById("gift-section").classList.remove("active-section");
+        document.getElementById("gift-section").classList.add("hidden-section");
+
+        document.getElementById("maze-section").classList.remove("hidden-section");
+        document.getElementById("maze-section").classList.add("active-section");
+    }, 800);
 }
 
-#music-btn {
-    background: #3f4e46;
-    color: #fff;
-    border: 1px solid #526359;
-    padding: 10px 18px;
-    border-radius: 25px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
+const canvas = document.getElementById("mazeCanvas");
+const ctx = canvas.getContext("2d");
+
+const maze = [
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+    [1, 1, 0, 1, 0],
+    [0, 0, 0, 0, 0]
+];
+
+let player = { x: 0, y: 0 };
+const tileSize = 80;
+
+function drawMaze() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+            if (maze[r][c] === 1) {
+                ctx.fillStyle = "#3f4e46";
+                ctx.fillRect(c * tileSize, r * tileSize, tileSize, tileSize);
+            }
+        }
+    }
+
+    ctx.fillStyle = "#81a1c1";
+    ctx.fillRect(4 * tileSize + 20, 4 * tileSize + 20, 40, 40);
+
+    ctx.fillStyle = "#8d5524";
+    ctx.beginPath();
+    ctx.arc(player.x * tileSize + 40, player.y * tileSize + 40, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#1a110b";
+    ctx.beginPath();
+    ctx.arc(player.x * tileSize + 40, player.y * tileSize + 25, 22, Math.PI, 0);
+    ctx.fill();
 }
 
-/* المتاهة */
-#mazeCanvas {
-    background: #1d2421;
-    border-radius: 16px;
-    margin-top: 20px;
-    border: 2px solid #4a5d52;
+window.addEventListener("keydown", (e) => {
+    let newX = player.x;
+    let newY = player.y;
+
+    if (e.key === "ArrowUp") newY--;
+    if (e.key === "ArrowDown") newY++;
+    if (e.key === "ArrowLeft") newX--;
+    if (e.key === "ArrowRight") newX++;
+
+    if (newX >= 0 && newX < 5 && newY >= 0 && newY < 5 && maze[newY][newX] === 0) {
+        player.x = newX;
+        player.y = newY;
+        drawMaze();
+        checkWin();
+    }
+});
+
+function checkWin() {
+    if (player.x === 4 && player.y === 4) {
+        setTimeout(() => {
+            document.getElementById("maze-section").classList.remove("active-section");
+            document.getElementById("maze-section").classList.add("hidden-section");
+            document.getElementById("garden-section").classList.remove("hidden-section");
+            document.getElementById("garden-section").classList.add("active-section");
+        }, 300);
+    }
 }
 
-/* الحديقة والوردات */
-.flowers-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin: 30px 0;
+drawMaze();
+
+function openModal(friendKey) {
+    document.getElementById("modal-title").innerText = friendKey;
+    document.getElementById("modal-text").innerText = friendMessages[friendKey];
+    document.getElementById("message-modal").style.display = "flex";
 }
 
-.flower-btn {
-    background: #3a4740;
-    border: 1px solid #526359;
-    color: #fff;
-    padding: 12px 22px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: transform 0.2s, background 0.2s;
+function closeModal() {
+    document.getElementById("message-modal").style.display = "none";
 }
 
-.flower-btn:hover {
-    transform: scale(1.06);
-    background: #4a5d52;
+function zoomImage(src) {
+    document.getElementById("zoomed-img").src = src;
+    document.getElementById("image-modal").style.display = "flex";
 }
 
-/* معرض الصور */
-.divider {
-    border: 0;
-    height: 1px;
-    background: #4a5d52;
-    margin: 40px 0;
-}
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 14px;
-    max-width: 800px;
-    margin: 20px auto;
-}
-
-.gallery-grid img {
-    width: 100%;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
-}
-
-.gallery-grid img:hover {
-    opacity: 0.85;
-    transform: scale(1.03);
-}
-
-/* النوافذ المنبثقة (Modal) */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-}
-
-.modal-content {
-    background: #252e2a;
-    padding: 30px;
-    border-radius: 16px;
-    max-width: 420px;
-    width: 90%;
-    position: relative;
-    border: 1px solid #4a5d52;
-    line-height: 1.6;
-}
-
-.close-btn {
-    position: absolute;
-    top: 12px; right: 18px;
-    font-size: 26px;
-    cursor: pointer;
-}
-
-#zoomed-img {
-    max-width: 90%;
-    max-height: 80vh;
-    border-radius: 12px;
+function closeImageModal() {
+    document.getElementById("image-modal").style.display = "none";
 }
