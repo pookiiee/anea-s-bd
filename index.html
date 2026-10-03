@@ -27,9 +27,6 @@
   <!-- Interactive Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <!-- Local High-Fidelity Audio Element (Starts @ 0:30) -->
-  <audio id="main-birthday-audio" src="assets/birthday_song.mp3" preload="auto"></audio>
-
   <!-- Top Floating Header & Controls -->
   <header class="top-nav">
     <div class="brand-tag">
@@ -80,12 +77,13 @@
     </div>
   </header>
 
+  <!-- YouTube Hidden Player Widget -->
+  <div id="youtube-audio-player" style="display:none;"></div>
+
   <!-- Main Viewport Router -->
   <main class="main-viewport">
 
-    <!-- ====================================================================
-         PHASE 1: THE BIRTHDAY GIFT BOX
-         ==================================================================== -->
+    <!-- PHASE 1: THE BIRTHDAY GIFT BOX -->
     <section class="phase-section active" id="phase-gift">
       <div class="gift-phase-container">
         <div class="gift-tagline">
@@ -122,7 +120,6 @@
           <span>Tap the gift box to unwrap</span>
         </div>
 
-        <!-- Appears once the gift box is opened -->
         <div class="gift-cta-box" id="gift-cta-container" style="display: none;">
           <p class="gift-cta-text">
             The garden gates are unlocking! Follow the mossy stone path through the maze to discover the flowers blooming in your name.
@@ -141,10 +138,7 @@
       </div>
     </section>
 
-
-    <!-- ====================================================================
-         PHASE 2: THE MAZE GAME (WITH ARROWS ON THE LEFT)
-         ==================================================================== -->
+    <!-- PHASE 2: THE MAZE GAME -->
     <section class="phase-section" id="phase-maze">
       <div class="maze-phase-container">
         <div class="maze-header">
@@ -154,10 +148,7 @@
           </p>
         </div>
 
-        <!-- 3-Column Layout: Controls on the Left, Maze in the Center, Stats on the Right -->
         <div class="maze-layout-row">
-          
-          <!-- LEFT COLUMN: ARROWS CONTROLS (Placed exactly where blue boxes were drawn) -->
           <div class="maze-controls-left">
             <div class="dpad-title">Controls</div>
             <div class="dpad-container">
@@ -178,17 +169,14 @@
             <div class="dpad-hint">Touch arrows or use keyboard (WASD / &uarr;&darr;&larr;&rarr;)</div>
           </div>
 
-          <!-- CENTER COLUMN: Canvas Game Board -->
           <div class="maze-board-card">
             <canvas id="maze-canvas" width="468" height="468"></canvas>
           </div>
 
-          <!-- RIGHT COLUMN: Side Panel Character & Stats -->
           <div class="maze-side-panel">
             <div class="character-card">
               <div class="character-avatar-large">
-                <!-- User's Official Character Illustration for anea -->
-                <img src="assets/anea.png" alt="anea" class="anea-avatar-img" />
+                <img src="anea.png" alt="anea" class="anea-avatar-img" />
               </div>
               <div class="character-name">anea</div>
               <div class="character-desc">Use arrow keys or touch buttons to reach the garden gate.</div>
@@ -202,19 +190,13 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-
-    <!-- ====================================================================
-         PHASE 3: THE BIRTHDAY GARDEN (REAL BOTANICAL MEADOW & KEEPSAKES)
-         ==================================================================== -->
+    <!-- PHASE 3: THE BIRTHDAY GARDEN -->
     <section class="phase-section" id="phase-garden">
       <div class="garden-phase-container">
-
-        <!-- Botanical Archway Decorative Header -->
         <div class="garden-entrance-arch">
           <svg viewBox="0 0 500 80" width="100%" height="80">
             <path d="M30,30 Q150,-10 250,20 T470,25" stroke="#4B5E33" stroke-width="4" fill="none"/>
@@ -238,13 +220,11 @@
             Welcome to the Birthday Garden
           </div>
           <h2 class="garden-title">The Birthday Garden</h2>
-          <!-- Exact requested message -->
           <p class="garden-subtitle">
             Seven rare flowers have bloomed in the soil of our friendship. Each petal carries a meaning written from the depths of our hearts. Click on each friend to read their message.
           </p>
         </div>
 
-        <!-- Section 1: The 7 Friends' Living Planted Flowers -->
         <div class="garden-divider-bar">
           <div class="garden-divider-line"></div>
           <div class="garden-divider-center">
@@ -254,12 +234,9 @@
           <div class="garden-divider-line"></div>
         </div>
 
-        <!-- REAL BOTANICAL MEADOW BED -->
         <div class="botanical-meadow-bed">
           <div class="meadow-grass-rim"></div>
-
           <div class="botanical-flowers-bed">
-            <!-- 1. ASEEL (Velvet Peony) -->
             <div class="planted-flower-specimen" data-friend="aseel" onclick="openLetter('aseel')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -283,7 +260,6 @@
               </div>
             </div>
 
-            <!-- 2. ARY (Sunlit Daisy) -->
             <div class="planted-flower-specimen" data-friend="ary" onclick="openLetter('ary')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -310,7 +286,6 @@
               </div>
             </div>
 
-            <!-- 3. HIRO (Night Lily) -->
             <div class="planted-flower-specimen" data-friend="hiro" onclick="openLetter('hiro')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -331,7 +306,6 @@
               </div>
             </div>
 
-            <!-- 4. TUQA (Meadow Bloom) -->
             <div class="planted-flower-specimen" data-friend="tuqa" onclick="openLetter('tuqa')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -355,7 +329,6 @@
               </div>
             </div>
 
-            <!-- 5. LUNA (Moss Orchid) -->
             <div class="planted-flower-specimen" data-friend="luna" onclick="openLetter('luna')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -376,7 +349,6 @@
               </div>
             </div>
 
-            <!-- 6. MADI (Wild Jasmine) -->
             <div class="planted-flower-specimen" data-friend="madi" onclick="openLetter('madi')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -395,7 +367,6 @@
               </div>
             </div>
 
-            <!-- 7. REEMY (Golden Lotus) -->
             <div class="planted-flower-specimen" data-friend="reemy" onclick="openLetter('reemy')">
               <span class="flower-read-sprout"></span>
               <div class="flower-bloom-entity">
@@ -418,7 +389,6 @@
           </div>
         </div>
 
-        <!-- Winding Stepping Stones Trail through the Garden -->
         <div class="garden-stepping-trail">
           <div class="stepping-stone"></div>
           <div class="stepping-stone"></div>
@@ -426,7 +396,6 @@
           <div class="stepping-stone"></div>
         </div>
 
-        <!-- Section 2: Memory Keepsake Pavilion -->
         <div class="garden-memory-pavilion">
           <div class="pavilion-header">
             <div class="pavilion-title-group">
@@ -440,12 +409,9 @@
 
           <div class="fairy-lights-rope"></div>
 
-          <div class="gallery-grid" id="photo-gallery-grid">
-            <!-- Dynamically populated from garden.js -->
-          </div>
+          <div class="gallery-grid" id="photo-gallery-grid"></div>
         </div>
 
-        <!-- Footer Section - Requested Exact Text -->
         <footer class="garden-footer">
           <p>Handcrafted with love for your birthday celebration <span class="footer-heart">&hearts;</span></p>
         </footer>
@@ -455,10 +421,7 @@
 
   </main>
 
-
-  <!-- ====================================================================
-       MODAL 1: LETTER DIALOG FROM FRIEND
-       ==================================================================== -->
+  <!-- MODAL 1: LETTER DIALOG -->
   <div class="modal-backdrop" id="letter-modal-backdrop">
     <div class="letter-dialog">
       <button class="modal-close-btn" onclick="closeLetterModal()" title="Close letter">
@@ -484,10 +447,7 @@
     </div>
   </div>
 
-
-  <!-- ====================================================================
-       MODAL 2: LIGHTBOX PHOTO DIALOG
-       ==================================================================== -->
+  <!-- MODAL 2: LIGHTBOX PHOTO DIALOG -->
   <div class="modal-backdrop" id="lightbox-modal-backdrop">
     <div class="lightbox-dialog">
       <button class="modal-close-btn" onclick="closeLightboxModal()" title="Close photo" style="top:12px; right:12px; z-index:10;">
