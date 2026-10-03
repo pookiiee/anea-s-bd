@@ -677,176 +677,34 @@ function drawGardenGate(ctx, x, y, size) {
   ctx.restore();
 }
 
+// تحميل صورة الشخصية anea بصيغة PNG للمتاهة
+const playerImage = new Image();
+playerImage.src = 'assets/anea.png';
+
 function drawCurlyGirlCharacter(ctx, cx, cy, r) {
   ctx.save();
 
-  // 1. Natural Voluminous Soft Curls (Deep Espresso & Warm Highlights)
-  const hairDark = '#160E08';
-  const hairMid = '#29180E';
-  const hairHighlight = '#482F1D';
-
-  // Base Silhouette (Bouncy Curly Cloud)
-  ctx.fillStyle = hairDark;
+  // قص الصورة بشكل دائري أنيق
   ctx.beginPath();
-  ctx.arc(cx, cy - r * 0.15, r * 1.05, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
 
-  // Distinct Organic Curls Around Head
-  const curlOffsets = [
-    { dx: -r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
-    { dx: r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
-    { dx: -r * 0.85, dy: r * 0.25, cr: r * 0.42 },
-    { dx: r * 0.85, dy: r * 0.25, cr: r * 0.42 },
-    { dx: -r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
-    { dx: r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
-    { dx: 0, dy: -r * 0.95, cr: r * 0.48 },
-    { dx: -r * 0.4, dy: -r * 0.9, cr: r * 0.42 },
-    { dx: r * 0.4, dy: -r * 0.9, cr: r * 0.42 }
-  ];
-
-  curlOffsets.forEach(c => {
-    ctx.fillStyle = hairDark;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx, cy + c.dy, c.cr, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = hairMid;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx * 0.88, cy + c.dy * 0.88, c.cr * 0.75, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = hairHighlight;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx * 0.8, cy + c.dy * 0.8, c.cr * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // 2. Golden Hoop Earrings
-  ctx.strokeStyle = '#D4A373';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // 3. Cozy Olive Green Sweater with Cream Collar
-  ctx.fillStyle = '#556934';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.92, r * 0.78, r * 0.42, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#F4EAD4';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.65, r * 0.35, r * 0.16, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 4. Prettier Face Shape & Glowing Warm Chestnut Skin
-  const skinTone = '#834925';
-  ctx.fillStyle = skinTone;
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.08, r * 0.64, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 5. Delicate Baby Hair / Forehead Ringlets
-  ctx.strokeStyle = hairMid;
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
-  ctx.stroke();
-
-  // 6. Radiant Rosy-Peach Cheeks
-  ctx.fillStyle = 'rgba(218, 98, 76, 0.45)';
-  ctx.beginPath();
-  ctx.ellipse(cx - r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
-  ctx.ellipse(cx + r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 7. Delicate Arched Eyebrows
-  ctx.strokeStyle = '#2E1B10';
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.22, cy - r * 0.12, r * 0.15, 1.1 * Math.PI, 1.8 * Math.PI);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.22, cy - r * 0.12, r * 0.15, 1.2 * Math.PI, 1.9 * Math.PI);
-  ctx.stroke();
-
-  // 8. Gorgeous Anime/Chibi Sparkling Eyes with Eyelashes
-  // Left Eye
-  ctx.fillStyle = '#211208';
-  ctx.beginPath();
-  ctx.ellipse(cx - r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#8C5528';
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
-  ctx.fill();
-
-  ctx.strokeStyle = '#140903';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.23, cy - r * 0.01, r * 0.14, 1.1 * Math.PI, 1.8 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.26, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
-  ctx.arc(cx - r * 0.20, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Right Eye
-  ctx.fillStyle = '#211208';
-  ctx.beginPath();
-  ctx.ellipse(cx + r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#8C5528';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
-  ctx.fill();
-
-  ctx.strokeStyle = '#140903';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.23, cy - r * 0.01, r * 0.14, 1.2 * Math.PI, 1.9 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.20, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
-  ctx.arc(cx + r * 0.26, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 9. Charming Rosy Smile
-  ctx.strokeStyle = '#9E4633';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.25, r * 0.16, 0.2 * Math.PI, 0.8 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = 'rgba(201, 95, 75, 0.65)';
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.26, r * 0.11, 0.2 * Math.PI, 0.8 * Math.PI);
-  ctx.fill();
-
-  // 10. Golden Jasmine Flower in Curls
-  ctx.fillStyle = '#D4A373';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.16, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#F4EAD4';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.07, 0, Math.PI * 2);
-  ctx.fill();
+  // رسم الصورة داخل المتاهة
+  if (playerImage.complete && playerImage.naturalWidth !== 0) {
+    ctx.drawImage(playerImage, cx - r * 0.9, cy - r * 0.9, r * 1.8, r * 1.8);
+  } else {
+    playerImage.onload = () => renderMaze();
+  }
 
   ctx.restore();
+
+  // إطار ذهبي ناعم حول الصورة
+  ctx.strokeStyle = '#D4A373';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function movePlayer(dx, dy) {
