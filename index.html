@@ -1,6 +1,22 @@
-<!-- مشغل الأغنية بملف الصوت المباشر أو مقطع يوتيوب -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Garden</title>
+    <!-- ربط ملف الـ CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- خط Bubble (Fredoka) من Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <!-- مكتبة قصاصات الورق والاحتفال -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- مشغل الأغنية (يوتيوب يبدأ من الثانية 30) -->
     <div class="music-player">
-        <!-- مشغل يوتيوب مخفي يبدأ من الثانية 30 -->
         <iframe id="youtube-player" 
                 width="0" 
                 height="0" 
@@ -14,3 +30,88 @@
             <span>Play Music</span>
         </button>
     </div>
+
+    <!-- 0. شاشة صندوق الهدايا -->
+    <section id="gift-section" class="active-section">
+        <div class="gift-container">
+            <h2>You've Got a Surprise!</h2>
+            <p>Click the gift box to open</p>
+            <div class="gift-box" onclick="openGift()">
+                <svg class="gift-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4V10h16v9zm0-11H4V8h16v1z"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- 1. صفحة المتاهة -->
+    <section id="maze-section" class="hidden-section">
+        <h2>Help Her Reach The Garden</h2>
+        <p>Use arrow keys on your keyboard to move</p>
+        <canvas id="mazeCanvas" width="400" height="400"></canvas>
+    </section>
+
+    <!-- 2. صفحة الحديقة -->
+    <section id="garden-section" class="hidden-section">
+        <h2>Memory Garden</h2>
+        <p>Click on any flower to open her special message</p>
+        
+        <div class="flowers-grid">
+            <button class="flower-btn" onclick="openModal('aseel')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>aseel</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('ary')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>ary</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('hiro')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>hiro</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('tuqa')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>tuqa</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('luna')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>luna</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('madi')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>madi</span>
+            </button>
+            <button class="flower-btn" onclick="openModal('reemy')">
+                <svg class="flower-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-5 5a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm10 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm-8.5 7a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zm7 0a3 3 0 0 0-3 3c0 1.66 1.34 3 3 3a3 3 0 0 0 3-3c0-1.66-1.34-3-3-3zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <span>reemy</span>
+            </button>
+        </div>
+
+        <!-- 3. معرض الذكريات -->
+        <hr class="divider">
+        <h3>Memories Gallery</h3>
+        <div class="gallery-grid">
+            <img src="photo1.jpg" alt="Memory" onclick="zoomImage(this.src)">
+            <img src="photo2.jpg" alt="Memory" onclick="zoomImage(this.src)">
+            <img src="photo3.jpg" alt="Memory" onclick="zoomImage(this.src)">
+            <img src="photo4.jpg" alt="Memory" onclick="zoomImage(this.src)">
+        </div>
+    </section>
+
+    <!-- نافذة الرسائل للوردات -->
+    <div id="message-modal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 id="modal-title"></h3>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+
+    <!-- نافذة تكبير الصور -->
+    <div id="image-modal" class="modal" onclick="closeImageModal()">
+        <img id="zoomed-img" src="" alt="Zoomed Memory">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
