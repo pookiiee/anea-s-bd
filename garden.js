@@ -1,14 +1,30 @@
+/**
+ * ==========================================================================
+ * THE BIRTHDAY GARDEN - INTERACTION ENGINE
+ * Features:
+ *  - Strict Sequential Progression (Surprise Box -> Maze Path -> The Birthday Garden)
+ *  - YouTube IFrame API audio player (starts @ 0:30 upon opening gift)
+ *  - Confetti explosion cannon
+ *  - Maze Game with controls placed on the left side (character: "anea")
+ *  - Real Botanical Garden with 7 friends' blooming flowers & long English letters
+ *  - Expandable polaroid keepsake gallery with lightbox
+ * ==========================================================================
+ */
+
+// Global State with strict unlock tracking
 const GardenState = {
-  currentPhase: 'gift',
+  currentPhase: 'gift', // 'gift', 'maze', 'garden'
   unlockedPhases: new Set(['gift']),
   boxOpened: false,
   mazeCompleted: false,
   musicPlaying: false,
   musicStarted: false,
   openedLetters: new Set(),
-  activePhotoIndex: 0
+  activePhotoIndex: 0,
+  dockCollapsed: false
 };
 
+// 7 Friends' Long English Birthday Letters
 const FriendsLetters = {
   aseel: {
     name: "Aseel",
@@ -111,68 +127,187 @@ As you step into this new age, my prayer for you is boundless peace, divine prot
   }
 };
 
+// Gallery Keepsakes Data
 const GalleryPhotos = [
-  { title: "Olive Grove Golden Hour", date: "Golden memories together", caption: "Quiet evenings under the olive trees, laughing until our faces hurt.", svgType: "grove" },
-  { title: "Late Night Teatime Talks", date: "Warm cups & endless stories", caption: "When minutes turned into hours and every secret felt safe.", svgType: "tea" },
-  { title: "The Starlit Picnic", date: "Under the summer constellations", caption: "Blankets on the grass, cozy sweaters, and dreams whispered to the sky.", svgType: "stars" },
-  { title: "Flower Crown Afternoons", date: "Spring in full bloom", caption: "Weaving wild daisies and moss blooms into silly little crowns.", svgType: "blooms" },
-  { title: "Laughter in the Soft Rain", date: "Dancing through misty puddles", caption: "Not caring that we were soaked, because we were together.", svgType: "rain" },
-  { title: "Cozy Books & Warm Wool", date: "Autumn reading sessions", caption: "Quiet companionship where silence is just as sweet as conversation.", svgType: "books" }
+  {
+    title: "Olive Grove Golden Hour",
+    date: "Golden memories together",
+    caption: "Quiet evenings under the olive trees, laughing until our faces hurt.",
+    svgType: "grove"
+  },
+  {
+    title: "Late Night Teatime Talks",
+    date: "Warm cups & endless stories",
+    caption: "When minutes turned into hours and every secret felt safe.",
+    svgType: "tea"
+  },
+  {
+    title: "The Starlit Picnic",
+    date: "Under the summer constellations",
+    caption: "Blankets on the grass, cozy sweaters, and dreams whispered to the sky.",
+    svgType: "stars"
+  },
+  {
+    title: "Flower Crown Afternoons",
+    date: "Spring in full bloom",
+    caption: "Weaving wild daisies and moss blooms into silly little crowns.",
+    svgType: "blooms"
+  },
+  {
+    title: "Laughter in the Soft Rain",
+    date: "Dancing through misty puddles",
+    caption: "Not caring that we were soaked, because we were together.",
+    svgType: "rain"
+  },
+  {
+    title: "Cozy Books & Warm Wool",
+    date: "Autumn reading sessions",
+    caption: "Quiet companionship where silence is just as sweet as conversation.",
+    svgType: "books"
+  }
 ];
 
+// ==========================================================================
+// AUDIO INTEGRATION (Starts @ 0:30 from uploaded song)
+// Primary: Local High-Fidelity MP3 (assets/birthday_song.mp3)
+// Fallback: YouTube IFrame API (B1kcMvb3qKA)
+// ==========================================================================
 let ytPlayer = null;
+let ytApiReady = false;
+let shouldPlayOnReady = false;
+let initialSeekDone = false;
+
+function getAudioElement() {
+  return document.getElementById('main-birthday-audio');
+}
 
 window.onYouTubeIframeAPIReady = function() {
   ytPlayer = new YT.Player('youtube-audio-player', {
-    height: '0',
-    width: '0',
+    height: '135',
+    width: '240',
     videoId: 'B1kcMvb3qKA',
     playerVars: {
       autoplay: 0,
-      controls: 0,
+      controls: 1,
+      disablekb: 0,
+      fs: 0,
+      rel: 0,
+      modestbranding: 1,
       start: 30,
       loop: 1,
       playlist: 'B1kcMvb3qKA',
+      playsinline: 1,
       enablejsapi: 1
     },
     events: {
+      'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
   });
 };
 
+function onPlayerReady(event) {
+  ytApiReady = true;
+  if (shouldPlayOnReady && !GardenState.musicStarted) {
+    startMusicPlayback();
+  }
+}
+
 function onPlayerStateChange(event) {
   if (event.data === YT.PlayerState.PLAYING) {
     GardenState.musicPlaying = true;
+    GardenState.musicStarted = true;
     updateMusicUI(true);
-  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-    GardenState.musicPlaying = false;
-    updateMusicUI(false);
+
+    if (!initialSeekDone) {
+      if (typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getCurrentTime() < 29.5) {
+        ytPlayer.seekTo(30, true);
+      }
+      initialSeekDone = true;
+    }
+  } else if (event.data === YT.PlayerState.ENDED) {
+    if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
+      ytPlayer.seekTo(30, true);
+      ytPlayer.playVideo();
+    }
+  } else if (event.data === YT.PlayerState.PAUSED) {
+    if (GardenState.userPaused) {
+      GardenState.musicPlaying = false;
+      updateMusicUI(false);
+    }
   }
 }
 
 function startMusicPlayback() {
-  if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-    ytPlayer.unMute();
-    ytPlayer.setVolume(100);
-    ytPlayer.seekTo(30, true);
-    ytPlayer.playVideo();
-    GardenState.musicStarted = true;
-    GardenState.musicPlaying = true;
-    updateMusicUI(true);
+  GardenState.userPaused = false;
+  const audio = getAudioElement();
+
+  // 1. Play high-fidelity local MP3 starting from 30s
+  if (audio) {
+    try {
+      audio.currentTime = 30;
+      audio.volume = 1.0;
+      const promise = audio.play();
+      if (promise !== undefined) {
+        promise.then(() => {
+          GardenState.musicStarted = true;
+          GardenState.musicPlaying = true;
+          updateMusicUI(true);
+        }).catch(() => {
+          fallbackToYouTube();
+        });
+        return;
+      }
+    } catch(e) {
+      fallbackToYouTube();
+      return;
+    }
+  }
+
+  fallbackToYouTube();
+}
+
+function fallbackToYouTube() {
+  if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
+    try {
+      ytPlayer.unMute();
+      ytPlayer.setVolume(100);
+      ytPlayer.seekTo(30, true);
+      ytPlayer.playVideo();
+      GardenState.musicStarted = true;
+      GardenState.musicPlaying = true;
+      updateMusicUI(true);
+    } catch(e) {}
+  } else {
+    shouldPlayOnReady = true;
   }
 }
 
 function toggleMusic() {
-  if (!ytPlayer) return;
+  const audio = getAudioElement();
+
   if (GardenState.musicPlaying) {
-    ytPlayer.pauseVideo();
+    GardenState.userPaused = true;
+    if (audio && !audio.paused) audio.pause();
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+    GardenState.musicPlaying = false;
+    updateMusicUI(false);
   } else {
-    if (!GardenState.musicStarted) {
-      ytPlayer.seekTo(30, true);
-      GardenState.musicStarted = true;
+    GardenState.userPaused = false;
+    if (audio) {
+      if (!GardenState.musicStarted) {
+        audio.currentTime = 30;
+        GardenState.musicStarted = true;
+      }
+      audio.play().then(() => {
+        GardenState.musicPlaying = true;
+        updateMusicUI(true);
+      }).catch(() => {
+        fallbackToYouTube();
+      });
+    } else {
+      fallbackToYouTube();
     }
-    ytPlayer.playVideo();
   }
 }
 
@@ -190,10 +325,113 @@ function updateMusicUI(isPlaying) {
   }
 }
 
+function toggleDockCollapse() {
+  const widget = document.getElementById('music-dock-widget');
+  const icon = document.getElementById('dock-collapse-icon');
+  if (!widget) return;
+
+  GardenState.dockCollapsed = !GardenState.dockCollapsed;
+  if (GardenState.dockCollapsed) {
+    widget.classList.add('collapsed');
+    if (icon) icon.innerHTML = '<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>';
+  } else {
+    widget.classList.remove('collapsed');
+    if (icon) icon.innerHTML = '<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>';
+  }
+}
+
+// Fallback Chime
+let fallbackAudioCtx = null;
+function playAmbientChime() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!fallbackAudioCtx) fallbackAudioCtx = new AudioCtx();
+    const osc = fallbackAudioCtx.createOscillator();
+    const gain = fallbackAudioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, fallbackAudioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(659.25, fallbackAudioCtx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.15, fallbackAudioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, fallbackAudioCtx.currentTime + 0.6);
+    osc.connect(gain);
+    gain.connect(fallbackAudioCtx.destination);
+    osc.start();
+    osc.stop(fallbackAudioCtx.currentTime + 0.6);
+  } catch(e) {}
+}
+
+// Confetti Blast Effect
 function launchBirthdayConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const confettiCount = 140;
+  const particles = [];
+  const colors = ['#92AA63', '#B2C49B', '#D4A373', '#F4EAD4', '#5C6E3E', '#FFFFFF', '#E5BE92'];
+
+  for (let i = 0; i < confettiCount; i++) {
+    particles.push({
+      x: canvas.width / 2 + (Math.random() * 80 - 40),
+      y: canvas.height / 2 + (Math.random() * 40 - 20),
+      vx: (Math.random() - 0.5) * 18,
+      vy: (Math.random() - 1.2) * 16 - 4,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 12,
+      opacity: 1,
+      shape: Math.random() > 0.4 ? 'rect' : 'circle'
+    });
+  }
+
+  let animationFrame;
+  const startTime = Date.now();
+
+  function renderConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const elapsed = Date.now() - startTime;
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.28;
+      p.vx *= 0.985;
+      p.rotation += p.rotationSpeed;
+      p.opacity = Math.max(0, 1 - elapsed / 3800);
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'rect') {
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.6);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    if (elapsed < 4000) {
+      animationFrame = requestAnimationFrame(renderConfetti);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  renderConfetti();
+
   if (typeof confetti === 'function') {
     confetti({
-      particleCount: 120,
+      particleCount: 80,
       spread: 70,
       origin: { y: 0.6 },
       colors: ['#92AA63', '#D4A373', '#F4EAD4', '#B2C49B']
@@ -201,6 +439,9 @@ function launchBirthdayConfetti() {
   }
 }
 
+// ==========================================================================
+// SEQUENTIAL UNLOCK & STAGE ROUTING
+// ==========================================================================
 function showToast(message) {
   let toast = document.getElementById('lock-toast');
   if (!toast) {
@@ -208,58 +449,97 @@ function showToast(message) {
     toast.id = 'lock-toast';
     document.body.appendChild(toast);
   }
-  toast.innerHTML = `<span>${message}</span>`;
+  toast.innerHTML = `
+    <svg class="svg-icon" style="width:16px;height:16px;color:#D4A373;" viewBox="0 0 24 24">
+      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+    </svg>
+    <span>${message}</span>
+  `;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2400);
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2400);
 }
 
 function requestSwitchPhase(phaseName) {
+  const node = document.querySelector(`.step-node[data-step="${phaseName}"]`);
+
   if (!GardenState.unlockedPhases.has(phaseName)) {
-    if (phaseName === 'maze') showToast("Open the surprise box first!");
-    if (phaseName === 'garden') showToast("Guide anea through the maze first!");
+    if (node) {
+      node.classList.remove('shake');
+      void node.offsetWidth;
+      node.classList.add('shake');
+    }
+
+    if (phaseName === 'maze') {
+      showToast("Open the surprise box first to unlock the maze path!");
+    } else if (phaseName === 'garden') {
+      showToast("Guide anea through the maze to unlock The Birthday Garden!");
+    }
     return;
   }
+
   switchPhase(phaseName);
 }
 
 function unlockPhase(phaseName) {
   GardenState.unlockedPhases.add(phaseName);
   const node = document.querySelector(`.step-node[data-step="${phaseName}"]`);
-  if (node) node.classList.remove('locked');
+  if (node) {
+    node.classList.remove('locked');
+  }
 }
 
 function switchPhase(phaseName) {
   GardenState.currentPhase = phaseName;
+
   document.querySelectorAll('.phase-section').forEach(sec => sec.classList.remove('active'));
   const targetSection = document.getElementById(`phase-${phaseName}`);
   if (targetSection) targetSection.classList.add('active');
 
   document.querySelectorAll('.step-node').forEach(node => {
+    const step = node.getAttribute('data-step');
     node.classList.remove('active');
-    if (node.getAttribute('data-step') === phaseName) node.classList.add('active');
+    if (step === phaseName) {
+      node.classList.add('active');
+    }
   });
 
-  if (phaseName === 'maze') initMazeGame();
+  if (phaseName === 'maze') {
+    initMazeGame();
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Open Gift Handler
 function handleGiftOpen() {
   const wrapper = document.getElementById('gift-box-wrapper');
   const cta = document.getElementById('gift-cta-container');
-  if (!wrapper || GardenState.boxOpened) return;
+  if (!wrapper) return;
+
+  if (GardenState.boxOpened) return;
 
   GardenState.boxOpened = true;
   wrapper.classList.add('opened');
   launchBirthdayConfetti();
+  playAmbientChime();
+
   unlockPhase('maze');
-  
-  // تشغيل الصوت مباشرة من يوتيوب من الثانية 30
+  const stepGift = document.querySelector('.step-node[data-step="gift"]');
+  if (stepGift) stepGift.classList.add('completed');
+
+  // Start music automatically from 0:30
   startMusicPlayback();
 
-  setTimeout(() => { if (cta) cta.style.display = 'block'; }, 600);
+  setTimeout(() => {
+    if (cta) cta.style.display = 'block';
+  }, 600);
 }
 
-// MAZE ENGINE WITH IMAGE
+// ==========================================================================
+// PHASE 2: MAZE GAME ENGINE (Character: anea)
+// ==========================================================================
 const MAZE_GRID = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 0, 1],
@@ -277,25 +557,38 @@ const MAZE_GRID = [
 ];
 
 let mazeState = {
-  grid: [], playerX: 1, playerY: 1, cellSize: 36, canvas: null, ctx: null, itemsFound: 0
+  grid: [],
+  playerX: 1,
+  playerY: 1,
+  cellSize: 36,
+  canvas: null,
+  ctx: null,
+  itemsFound: 0
 };
-
-// تعديل المسار المباشر لصورة الشخصية المرفوعة بنفس الصفحة
-const playerImage = new Image();
-playerImage.src = 'anea.png';
 
 function initMazeGame() {
   mazeState.canvas = document.getElementById('maze-canvas');
   if (!mazeState.canvas) return;
   mazeState.ctx = mazeState.canvas.getContext('2d');
+
   mazeState.grid = MAZE_GRID.map(row => [...row]);
-  mazeState.playerX = 1; mazeState.playerY = 1; mazeState.itemsFound = 0;
+  mazeState.playerX = 1;
+  mazeState.playerY = 1;
+  mazeState.itemsFound = 0;
+  updateMazeStats();
 
   const containerWidth = Math.min(window.innerWidth - 64, 468);
   const size = Math.floor(containerWidth / 13) * 13;
-  mazeState.canvas.width = size; mazeState.canvas.height = size;
+  mazeState.canvas.width = size;
+  mazeState.canvas.height = size;
   mazeState.cellSize = size / 13;
+
   renderMaze();
+}
+
+function updateMazeStats() {
+  const el = document.getElementById('maze-seed-count');
+  if (el) el.textContent = `${mazeState.itemsFound} / 3`;
 }
 
 function renderMaze() {
@@ -313,59 +606,266 @@ function renderMaze() {
       if (cell === 1) {
         ctx.fillStyle = '#232D19';
         ctx.fillRect(x, y, cellSize, cellSize);
+
         ctx.fillStyle = '#3B4B27';
         ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+
+        ctx.fillStyle = '#5A6F3C';
+        ctx.beginPath();
+        ctx.arc(x + cellSize * 0.5, y + cellSize * 0.5, cellSize * 0.18, 0, Math.PI * 2);
+        ctx.fill();
       } else {
         ctx.fillStyle = '#1A1E1B';
         ctx.fillRect(x, y, cellSize, cellSize);
+
+        ctx.strokeStyle = 'rgba(163, 177, 138, 0.05)';
+        ctx.strokeRect(x, y, cellSize, cellSize);
+
         if (cell === 2) {
-          ctx.fillStyle = '#D4A373';
-          ctx.beginPath(); ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.2, 0, Math.PI * 2); ctx.fill();
+          drawCollectibleStar(ctx, x + cellSize / 2, y + cellSize / 2, cellSize * 0.32);
         } else if (cell === 3) {
-          ctx.fillStyle = '#92AA63';
-          ctx.fillRect(x + 4, y + 4, cellSize - 8, cellSize - 8);
+          drawGardenGate(ctx, x, y, cellSize);
         }
       }
     }
   }
 
+  // Draw Player Character: anea
   drawCurlyGirlCharacter(ctx, playerX * cellSize + cellSize / 2, playerY * cellSize + cellSize / 2, cellSize * 0.44);
+}
+
+function drawCollectibleStar(ctx, cx, cy, radius) {
+  ctx.save();
+  ctx.fillStyle = '#D4A373';
+  ctx.shadowColor = 'rgba(212, 163, 115, 0.7)';
+  ctx.shadowBlur = 10;
+  
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    ctx.lineTo(
+      cx + Math.cos((18 + i * 72) * Math.PI / 180) * radius,
+      cy - Math.sin((18 + i * 72) * Math.PI / 180) * radius
+    );
+    ctx.lineTo(
+      cx + Math.cos((54 + i * 72) * Math.PI / 180) * (radius / 2.2),
+      cy - Math.sin((54 + i * 72) * Math.PI / 180) * (radius / 2.2)
+    );
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGardenGate(ctx, x, y, size) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(146, 170, 99, 0.35)';
+  ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+
+  ctx.strokeStyle = '#92AA63';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size * 0.4, size * 0.35, Math.PI, 0);
+  ctx.lineTo(x + size * 0.85, y + size - 2);
+  ctx.lineTo(x + size * 0.15, y + size - 2);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.fillStyle = '#D4A373';
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size * 0.55, size * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawCurlyGirlCharacter(ctx, cx, cy, r) {
   ctx.save();
-  if (playerImage.complete && playerImage.naturalWidth !== 0) {
+
+  // 1. Natural Voluminous Soft Curls (Deep Espresso & Warm Highlights)
+  const hairDark = '#160E08';
+  const hairMid = '#29180E';
+  const hairHighlight = '#482F1D';
+
+  // Base Silhouette (Bouncy Curly Cloud)
+  ctx.fillStyle = hairDark;
+  ctx.beginPath();
+  ctx.arc(cx, cy - r * 0.15, r * 1.05, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Distinct Organic Curls Around Head
+  const curlOffsets = [
+    { dx: -r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
+    { dx: r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
+    { dx: -r * 0.85, dy: r * 0.25, cr: r * 0.42 },
+    { dx: r * 0.85, dy: r * 0.25, cr: r * 0.42 },
+    { dx: -r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
+    { dx: r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
+    { dx: 0, dy: -r * 0.95, cr: r * 0.48 },
+    { dx: -r * 0.4, dy: -r * 0.9, cr: r * 0.42 },
+    { dx: r * 0.4, dy: -r * 0.9, cr: r * 0.42 }
+  ];
+
+  curlOffsets.forEach(c => {
+    ctx.fillStyle = hairDark;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(playerImage, cx - r, cy - r, r * 2, r * 2);
-  } else {
-    ctx.fillStyle = '#834925';
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-  }
+    ctx.arc(cx + c.dx, cy + c.dy, c.cr, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = hairMid;
+    ctx.beginPath();
+    ctx.arc(cx + c.dx * 0.88, cy + c.dy * 0.88, c.cr * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = hairHighlight;
+    ctx.beginPath();
+    ctx.arc(cx + c.dx * 0.8, cy + c.dy * 0.8, c.cr * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 2. Golden Hoop Earrings
   ctx.strokeStyle = '#D4A373';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 3. Cozy Olive Green Sweater with Cream Collar
+  ctx.fillStyle = '#556934';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.92, r * 0.78, r * 0.42, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#F4EAD4';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.65, r * 0.35, r * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Prettier Face Shape & Glowing Warm Chestnut Skin
+  const skinTone = '#834925';
+  ctx.fillStyle = skinTone;
+  ctx.beginPath();
+  ctx.arc(cx, cy + r * 0.08, r * 0.64, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 5. Delicate Baby Hair / Forehead Ringlets
+  ctx.strokeStyle = hairMid;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
+  ctx.stroke();
+
+  // 6. Radiant Rosy-Peach Cheeks
+  ctx.fillStyle = 'rgba(218, 98, 76, 0.45)';
+  ctx.beginPath();
+  ctx.ellipse(cx - r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 7. Delicate Arched Eyebrows
+  ctx.strokeStyle = '#2E1B10';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.22, cy - r * 0.12, r * 0.15, 1.1 * Math.PI, 1.8 * Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.22, cy - r * 0.12, r * 0.15, 1.2 * Math.PI, 1.9 * Math.PI);
+  ctx.stroke();
+
+  // 8. Gorgeous Anime/Chibi Sparkling Eyes with Eyelashes
+  // Left Eye
+  ctx.fillStyle = '#211208';
+  ctx.beginPath();
+  ctx.ellipse(cx - r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#8C5528';
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
+  ctx.fill();
+
+  ctx.strokeStyle = '#140903';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.23, cy - r * 0.01, r * 0.14, 1.1 * Math.PI, 1.8 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.26, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
+  ctx.arc(cx - r * 0.20, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right Eye
+  ctx.fillStyle = '#211208';
+  ctx.beginPath();
+  ctx.ellipse(cx + r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#8C5528';
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
+  ctx.fill();
+
+  ctx.strokeStyle = '#140903';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.23, cy - r * 0.01, r * 0.14, 1.2 * Math.PI, 1.9 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.20, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
+  ctx.arc(cx + r * 0.26, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 9. Charming Rosy Smile
+  ctx.strokeStyle = '#9E4633';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy + r * 0.25, r * 0.16, 0.2 * Math.PI, 0.8 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(201, 95, 75, 0.65)';
+  ctx.beginPath();
+  ctx.arc(cx, cy + r * 0.26, r * 0.11, 0.2 * Math.PI, 0.8 * Math.PI);
+  ctx.fill();
+
+  // 10. Golden Jasmine Flower in Curls
+  ctx.fillStyle = '#D4A373';
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#F4EAD4';
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }
 
-playerImage.onload = () => { if (GardenState.currentPhase === 'maze') renderMaze(); };
-
 function movePlayer(dx, dy) {
   if (GardenState.currentPhase !== 'maze') return;
+
   const targetX = mazeState.playerX + dx;
   const targetY = mazeState.playerY + dy;
 
   if (targetX < 0 || targetX >= 13 || targetY < 0 || targetY >= 13) return;
   if (mazeState.grid[targetY][targetX] === 1) return;
 
-  mazeState.playerX = targetX; mazeState.playerY = targetY;
+  mazeState.playerX = targetX;
+  mazeState.playerY = targetY;
 
   if (mazeState.grid[targetY][targetX] === 2) {
     mazeState.grid[targetY][targetX] = 0;
     mazeState.itemsFound++;
-    document.getElementById('maze-seed-count').textContent = `${mazeState.itemsFound} / 3`;
+    updateMazeStats();
+    playAmbientChime();
     launchBirthdayConfetti();
   }
 
@@ -373,47 +873,388 @@ function movePlayer(dx, dy) {
     renderMaze();
     setTimeout(() => {
       launchBirthdayConfetti();
-      unlockPhase('garden');
-      switchPhase('garden');
+      playAmbientChime();
+      alertSuccessAndEnterGarden();
     }, 150);
     return;
   }
+
   renderMaze();
 }
 
+function alertSuccessAndEnterGarden() {
+  GardenState.mazeCompleted = true;
+  unlockPhase('garden');
+
+  const step2 = document.querySelector('.step-node[data-step="maze"]');
+  if (step2) step2.classList.add('completed');
+
+  switchPhase('garden');
+}
+
+// Keyboard controls
 window.addEventListener('keydown', (e) => {
   if (GardenState.currentPhase !== 'maze') return;
-  if (e.key === 'ArrowUp' || e.key === 'w') movePlayer(0, -1);
-  if (e.key === 'ArrowDown' || e.key === 's') movePlayer(0, 1);
-  if (e.key === 'ArrowLeft' || e.key === 'a') movePlayer(-1, 0);
-  if (e.key === 'ArrowRight' || e.key === 'd') movePlayer(1, 0);
+
+  switch (e.key) {
+    case 'ArrowUp':
+    case 'w':
+    case 'W':
+      e.preventDefault();
+      movePlayer(0, -1);
+      break;
+    case 'ArrowDown':
+    case 's':
+    case 'S':
+      e.preventDefault();
+      movePlayer(0, 1);
+      break;
+    case 'ArrowLeft':
+    case 'a':
+    case 'A':
+      e.preventDefault();
+      movePlayer(-1, 0);
+      break;
+    case 'ArrowRight':
+    case 'd':
+    case 'D':
+      e.preventDefault();
+      movePlayer(1, 0);
+      break;
+  }
 });
 
+// ==========================================================================
+// PHASE 3: REAL BOTANICAL GARDEN & LETTERS
+// ==========================================================================
 function openLetter(friendKey) {
   const data = FriendsLetters[friendKey];
   if (!data) return;
 
-  document.getElementById('modal-letter-from').textContent = `Letter from ${data.name}`;
-  document.getElementById('modal-letter-flower-type').textContent = `Blooming: ${data.flowerName}`;
-  document.getElementById('modal-letter-body').textContent = data.letter;
-  document.getElementById('modal-letter-signoff').textContent = data.signoff;
-  document.getElementById('modal-letter-date').textContent = data.date;
+  GardenState.openedLetters.add(friendKey);
+  const plantEl = document.querySelector(`.planted-flower-specimen[data-friend="${friendKey}"]`);
+  if (plantEl) plantEl.classList.add('opened');
 
-  document.getElementById('letter-modal-backdrop').classList.add('active');
+  const backdrop = document.getElementById('letter-modal-backdrop');
+  const fromEl = document.getElementById('modal-letter-from');
+  const typeEl = document.getElementById('modal-letter-flower-type');
+  const bodyEl = document.getElementById('modal-letter-body');
+  const signoffEl = document.getElementById('modal-letter-signoff');
+  const dateEl = document.getElementById('modal-letter-date');
+
+  if (!backdrop) return;
+
+  fromEl.textContent = `Letter from ${data.name}`;
+  typeEl.textContent = `Blooming: ${data.flowerName}`;
+  bodyEl.textContent = data.letter;
+  signoffEl.textContent = data.signoff;
+  dateEl.textContent = data.date;
+
+  backdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeLetterModal() {
-  document.getElementById('letter-modal-backdrop').classList.remove('active');
+  const backdrop = document.getElementById('letter-modal-backdrop');
+  if (backdrop) backdrop.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function openLightbox(index) {
+  const photo = GalleryPhotos[index];
+  if (!photo) return;
+
+  GardenState.activePhotoIndex = index;
+  const backdrop = document.getElementById('lightbox-modal-backdrop');
+  const imgContainer = document.getElementById('lightbox-img-container');
+  const captionEl = document.getElementById('lightbox-caption');
+  const dateEl = document.getElementById('lightbox-date');
+
+  if (!backdrop || !imgContainer) return;
+
+  imgContainer.innerHTML = getGalleryArtworkSVG(photo.svgType, 800, 500);
+  captionEl.textContent = photo.title;
+  dateEl.textContent = photo.caption;
+
+  backdrop.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeLightboxModal() {
-  document.getElementById('lightbox-modal-backdrop').classList.remove('active');
+  const backdrop = document.getElementById('lightbox-modal-backdrop');
+  if (backdrop) backdrop.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
+function getGalleryArtworkSVG(type, width, height) {
+  switch (type) {
+    case 'grove':
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="skyGrove" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2D3A24" />
+              <stop offset="100%" stop-color="#1B2217" />
+            </linearGradient>
+            <radialGradient id="sunGlow" cx="0.5" cy="0.4" r="0.4">
+              <stop offset="0%" stop-color="#E5BE92" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#D4A373" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#skyGrove)" />
+          <circle cx="200" cy="140" r="90" fill="url(#sunGlow)" />
+          <path d="M0,230 Q100,190 220,220 T400,210 L400,300 L0,300 Z" fill="#3D4B2A" />
+          <path d="M0,250 Q160,220 280,245 T400,230 L400,300 L0,300 Z" fill="#29331C" />
+          <circle cx="120" cy="190" r="35" fill="#5C6E3E" />
+          <rect x="117" y="210" width="6" height="30" fill="#1C140E" rx="3" />
+          <circle cx="280" cy="180" r="42" fill="#7E9455" />
+          <rect x="277" y="205" width="7" height="35" fill="#1C140E" rx="3" />
+          <circle cx="150" cy="160" r="3" fill="#F4EAD4" opacity="0.8" />
+          <circle cx="240" cy="130" r="2.5" fill="#F4EAD4" opacity="0.7" />
+          <circle cx="310" cy="160" r="3.5" fill="#F4EAD4" opacity="0.9" />
+        </svg>
+      `;
+
+    case 'tea':
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#1E231F" />
+          <ellipse cx="200" cy="240" rx="170" ry="50" fill="#2E372B" />
+          <rect x="130" y="190" width="46" height="36" rx="8" fill="#5C6E3E" />
+          <path d="M176,198 C185,198 185,214 176,214" stroke="#5C6E3E" stroke-width="4" fill="none" />
+          <rect x="220" y="190" width="46" height="36" rx="8" fill="#A3B18A" />
+          <path d="M266,198 C275,198 275,214 266,214" stroke="#A3B18A" stroke-width="4" fill="none" />
+          <path d="M145,180 Q150,165 145,150" stroke="#ADC0AC" stroke-width="2" fill="none" opacity="0.6" stroke-linecap="round" />
+          <path d="M160,175 Q165,160 160,145" stroke="#ADC0AC" stroke-width="2" fill="none" opacity="0.6" stroke-linecap="round" />
+          <path d="M235,180 Q240,165 235,150" stroke="#ADC0AC" stroke-width="2" fill="none" opacity="0.6" stroke-linecap="round" />
+          <ellipse cx="200" cy="170" rx="34" ry="26" fill="#D4A373" />
+          <path d="M200,144 L200,138" stroke="#D4A373" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      `;
+
+    case 'stars':
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#131714" />
+          <path d="M290,60 A32,32 0 0,0 260,95 A32,32 0 1,1 290,60" fill="#E5BE92" />
+          <circle cx="80" cy="70" r="2.5" fill="#F4EAD4" />
+          <circle cx="140" cy="50" r="1.5" fill="#F4EAD4" />
+          <circle cx="210" cy="80" r="2" fill="#F4EAD4" />
+          <circle cx="340" cy="100" r="2" fill="#F4EAD4" />
+          <circle cx="100" cy="120" r="1.8" fill="#F4EAD4" />
+          <circle cx="170" cy="110" r="3" fill="#F4EAD4" />
+          <path d="M0,220 Q200,180 400,220 L400,300 L0,300 Z" fill="#242E1D" />
+          <polygon points="140,240 260,240 280,270 120,270" fill="#5C6E3E" />
+          <polygon points="150,245 250,245 268,265 132,265" fill="#A3B18A" opacity="0.4" />
+        </svg>
+      `;
+
+    case 'blooms':
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#1A201B" />
+          <circle cx="200" cy="150" r="75" stroke="#4C5E33" stroke-width="12" fill="none" />
+          <circle cx="200" cy="75" r="16" fill="#D4A373" />
+          <circle cx="200" cy="75" r="7" fill="#F4EAD4" />
+          <circle cx="275" cy="150" r="18" fill="#92AA63" />
+          <circle cx="275" cy="150" r="8" fill="#FFFFFF" />
+          <circle cx="125" cy="150" r="18" fill="#B2C49B" />
+          <circle cx="125" cy="150" r="8" fill="#FFFFFF" />
+          <circle cx="200" cy="225" r="16" fill="#E5BE92" />
+          <circle cx="200" cy="225" r="7" fill="#F4EAD4" />
+          <path d="M250,100 Q265,90 260,110 Z" fill="#7E9455" />
+          <path d="M150,100 Q135,90 140,110 Z" fill="#7E9455" />
+          <path d="M250,200 Q265,210 260,190 Z" fill="#7E9455" />
+          <path d="M150,200 Q135,210 140,190 Z" fill="#7E9455" />
+        </svg>
+      `;
+
+    case 'rain':
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#181D1A" />
+          <line x1="80" y1="40" x2="70" y2="70" stroke="#A3B18A" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+          <line x1="160" y1="30" x2="150" y2="60" stroke="#A3B18A" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+          <line x1="240" y1="50" x2="230" y2="80" stroke="#A3B18A" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+          <line x1="320" y1="35" x2="310" y2="65" stroke="#A3B18A" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+          <path d="M120,170 A50,50 0 0,1 220,170 Z" fill="#5C6E3E" />
+          <line x1="170" y1="170" x2="170" y2="220" stroke="#D4A373" stroke-width="4" stroke-linecap="round" />
+          <path d="M170,220 C170,230 160,230 160,220" stroke="#D4A373" stroke-width="4" fill="none" />
+          <path d="M200,160 A52,52 0 0,1 304,160 Z" fill="#7E9455" />
+          <line x1="252" y1="160" x2="252" y2="215" stroke="#D4A373" stroke-width="4" stroke-linecap="round" />
+          <path d="M252,215 C252,225 242,225 242,215" stroke="#D4A373" stroke-width="4" fill="none" />
+        </svg>
+      `;
+
+    case 'books':
+    default:
+      return `
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#1C211E" />
+          <rect x="140" y="210" width="130" height="24" rx="4" fill="#3D4B2A" />
+          <rect x="145" y="214" width="120" height="16" fill="#F4EAD4" opacity="0.7" />
+          <rect x="150" y="186" width="115" height="22" rx="4" fill="#92AA63" />
+          <rect x="155" y="190" width="105" height="14" fill="#F4EAD4" opacity="0.7" />
+          <rect x="160" y="164" width="95" height="20" rx="4" fill="#D4A373" />
+          <rect x="200" y="130" width="16" height="32" rx="3" fill="#E5BE92" />
+          <ellipse cx="208" cy="120" rx="4" ry="7" fill="#F4EAD4" />
+          <circle cx="208" cy="120" r="10" fill="#D4A373" opacity="0.3" />
+        </svg>
+      `;
+  }
+}
+
+// Ambient Floating Fireflies
+function initAmbientFireflies() {
+  const canvas = document.getElementById('ambient-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = [];
+  const count = 35;
+
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      radius: Math.random() * 2.5 + 1,
+      alpha: Math.random() * 0.6 + 0.2,
+      dAlpha: (Math.random() - 0.5) * 0.015
+    });
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      p.alpha += p.dAlpha;
+      if (p.alpha <= 0.1 || p.alpha >= 0.7) p.dAlpha = -p.dAlpha;
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = '#B2C49B';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(146, 170, 99, 0.3)';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius * 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+// Populate Gallery Thumbnails
+function populatePhotoGallery() {
+  const container = document.getElementById('photo-gallery-grid');
+  if (!container) return;
+
+  container.innerHTML = '';
+  GalleryPhotos.forEach((photo, idx) => {
+    const card = document.createElement('div');
+    card.className = 'polaroid-card';
+    card.onclick = () => openLightbox(idx);
+
+    card.innerHTML = `
+      <div class="polaroid-img-wrapper">
+        ${getGalleryArtworkSVG(photo.svgType, 280, 210)}
+        <div class="polaroid-zoom-overlay">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+      </div>
+      <div class="polaroid-caption">${photo.title}</div>
+      <div class="polaroid-date">${photo.date}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
+  initAmbientFireflies();
+  populatePhotoGallery();
+
+  // Gift Box Click
   const giftBox = document.getElementById('gift-box-wrapper');
   if (giftBox) giftBox.addEventListener('click', handleGiftOpen);
 
+  // Fallback: any first interaction on the gift section guarantees playback starts at 30s
+  const giftSection = document.getElementById('phase-gift');
+  if (giftSection) {
+    giftSection.addEventListener('click', () => {
+      if (!GardenState.musicStarted) {
+        startMusicPlayback();
+      }
+    });
+  }
+
+  // Local Audio Loop & State Listeners
+  const audio = getAudioElement();
+  if (audio) {
+    audio.addEventListener('ended', () => {
+      audio.currentTime = 30;
+      audio.play();
+    });
+    audio.addEventListener('play', () => {
+      GardenState.musicPlaying = true;
+      GardenState.musicStarted = true;
+      updateMusicUI(true);
+    });
+    audio.addEventListener('pause', () => {
+      if (GardenState.userPaused) {
+        GardenState.musicPlaying = false;
+        updateMusicUI(false);
+      }
+    });
+  }
+
+  // Music Button Click
   const musicBtn = document.getElementById('music-toggle-btn');
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
+
+  // Close modals on escape key or backdrop click
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeLetterModal();
+      closeLightboxModal();
+    }
+  });
+
+  const letterBackdrop = document.getElementById('letter-modal-backdrop');
+  if (letterBackdrop) {
+    letterBackdrop.addEventListener('click', (e) => {
+      if (e.target === letterBackdrop) closeLetterModal();
+    });
+  }
+
+  const lightboxBackdrop = document.getElementById('lightbox-modal-backdrop');
+  if (lightboxBackdrop) {
+    lightboxBackdrop.addEventListener('click', (e) => {
+      if (e.target === lightboxBackdrop) closeLightboxModal();
+    });
+  }
 });
