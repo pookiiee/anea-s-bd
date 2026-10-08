@@ -866,8 +866,16 @@ function closeLightboxModal() {
   document.body.style.overflow = '';
 }
 
+const ARY_CARD_FRAME = { 'assets/ary.webp': 'background-size:173%;background-position:44% 55%;' };
+
 function getGalleryArtworkSVG(type, width, height) {
   if (type.startsWith("img:")) {
+    const src = type.slice(4);
+    // Zoomed card framing so both characters stay inside the square
+    const frame = ARY_CARD_FRAME[src];
+    if (frame && width <= 400) {
+      return `<div style="width:100%;height:100%;background:url(${src}) no-repeat;${frame}"></div>`;
+    }
     const fit = width > 400 ? "contain" : "cover";
     return `<img class="polaroid-img" src="${type.slice(4)}" alt="" style="width:100%;height:100%;object-fit:${fit};" />`;
   }
