@@ -874,7 +874,10 @@ function getGalleryArtworkSVG(type, width, height) {
     // Zoomed card framing so both characters stay inside the square
     const frame = ARY_CARD_FRAME[src];
     if (frame && width <= 400) {
-      return `<div style="width:100%;height:100%;background:url(${src}) no-repeat;${frame}"></div>`;
+      return `<div style="position:relative;width:100%;height:100%;overflow:hidden;">
+        <div style="position:absolute;inset:-12%;background:url(${src}) center/cover;filter:blur(14px);"></div>
+        <div style="position:absolute;inset:0;background:url(${src}) no-repeat;${frame}"></div>
+      </div>`;
     }
     const fit = width > 400 ? "contain" : "cover";
     return `<img class="polaroid-img" src="${type.slice(4)}" alt="" style="width:100%;height:100%;object-fit:${fit};" />`;
