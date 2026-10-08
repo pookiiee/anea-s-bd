@@ -1583,3 +1583,5 @@ body {
   .garden-title { font-size: 1.9rem; }
   .garden-subtitle { font-size: 0.98rem; }
 }
+
+.polaroid-img-wrapper.square { aspect-ratio: 1 / 1; }
