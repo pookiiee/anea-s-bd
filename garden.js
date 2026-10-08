@@ -164,6 +164,12 @@ const GalleryPhotos = [
     date: "Autumn reading sessions",
     caption: "Quiet companionship where silence is just as sweet as conversation.",
     svgType: "books"
+  },
+  {
+    title: "Aseel",
+    date: "our wedding day",
+    caption: "our wedding day",
+    svgType: "img:assets/wedding.jpg"
   }
 ];
 
@@ -855,6 +861,10 @@ function closeLightboxModal() {
 }
 
 function getGalleryArtworkSVG(type, width, height) {
+  if (type.startsWith("img:")) {
+    const fit = width > 400 ? "contain" : "cover";
+    return `<img class="polaroid-img" src="${type.slice(4)}" alt="" style="width:100%;height:100%;object-fit:${fit};" />`;
+  }
   switch (type) {
     case 'grove':
       return `
