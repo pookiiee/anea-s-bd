@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ==========================================================================
  * THE BIRTHDAY GARDEN - INTERACTION ENGINE
  * Features:
@@ -194,23 +194,29 @@ window.onYouTubeIframeAPIReady = function() {
       rel: 0,
       modestbranding: 1,
       start: 30,
-      loop: 1,
-      playlist: 'B1kcMvb3qKA',
       playsinline: 1,
       enablejsapi: 1
     },
     events: {
       'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
+      'onStateChange': onPlayerStateChange,
+      'onError': onPlayerError
     }
   });
 };
 
+let ytFailed = false;
+
 function onPlayerReady(event) {
   ytApiReady = true;
   if (shouldPlayOnReady && !GardenState.musicStarted) {
-    startMusicPlayback();
+    playYouTube();
   }
+}
+
+function onPlayerError() {
+  ytFailed = true;
+  if (!GardenState.userPaused) playLocalAudio();
 }
 
 function onPlayerStateChange(event) {
@@ -218,69 +224,56 @@ function onPlayerStateChange(event) {
     GardenState.musicPlaying = true;
     GardenState.musicStarted = true;
     updateMusicUI(true);
+    const audio = getAudioElement();
+    if (audio && !audio.paused) audio.pause();
 
     if (!initialSeekDone) {
-      if (typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getCurrentTime() < 29.5) {
-        ytPlayer.seekTo(30, true);
-      }
+      if (ytPlayer.getCurrentTime() < 29.5) ytPlayer.seekTo(30, true);
       initialSeekDone = true;
     }
   } else if (event.data === YT.PlayerState.ENDED) {
-    if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
-      ytPlayer.seekTo(30, true);
-      ytPlayer.playVideo();
-    }
-  } else if (event.data === YT.PlayerState.PAUSED) {
-    if (GardenState.userPaused) {
-      GardenState.musicPlaying = false;
-      updateMusicUI(false);
-    }
+    ytPlayer.seekTo(30, true);
+    ytPlayer.playVideo();
+  } else if (event.data === YT.PlayerState.PAUSED && GardenState.userPaused) {
+    GardenState.musicPlaying = false;
+    updateMusicUI(false);
   }
+}
+
+function playYouTube() {
+  try {
+    ytPlayer.unMute();
+    ytPlayer.setVolume(100);
+    if (!initialSeekDone) ytPlayer.seekTo(30, true);
+    ytPlayer.playVideo();
+  } catch (e) {
+    ytFailed = true;
+    playLocalAudio();
+  }
+}
+
+// Fallback: local copy of the song, also starting at 0:30
+function playLocalAudio() {
+  const audio = getAudioElement();
+  if (!audio) return;
+  if (audio.currentTime < 30) audio.currentTime = 30;
+  audio.play().then(() => {
+    GardenState.musicStarted = true;
+    GardenState.musicPlaying = true;
+    updateMusicUI(true);
+  }).catch(() => {});
 }
 
 function startMusicPlayback() {
   GardenState.userPaused = false;
-  const audio = getAudioElement();
-
-  // 1. Play high-fidelity local MP3 starting from 30s
-  if (audio) {
-    try {
-      audio.currentTime = 30;
-      audio.volume = 1.0;
-      const promise = audio.play();
-      if (promise !== undefined) {
-        promise.then(() => {
-          GardenState.musicStarted = true;
-          GardenState.musicPlaying = true;
-          updateMusicUI(true);
-        }).catch(() => {
-          fallbackToYouTube();
-        });
-        return;
-      }
-    } catch(e) {
-      fallbackToYouTube();
-      return;
-    }
+  if (ytPlayer && ytApiReady && !ytFailed) {
+    playYouTube();
+    return;
   }
-
-  fallbackToYouTube();
-}
-
-function fallbackToYouTube() {
-  if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
-    try {
-      ytPlayer.unMute();
-      ytPlayer.setVolume(100);
-      ytPlayer.seekTo(30, true);
-      ytPlayer.playVideo();
-      GardenState.musicStarted = true;
-      GardenState.musicPlaying = true;
-      updateMusicUI(true);
-    } catch(e) {}
-  } else {
-    shouldPlayOnReady = true;
-  }
+  shouldPlayOnReady = true;
+  setTimeout(() => {
+    if (!GardenState.musicStarted && !GardenState.userPaused) playLocalAudio();
+  }, 3000);
 }
 
 function toggleMusic() {
@@ -289,28 +282,18 @@ function toggleMusic() {
   if (GardenState.musicPlaying) {
     GardenState.userPaused = true;
     if (audio && !audio.paused) audio.pause();
-    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+    if (ytPlayer && ytApiReady) ytPlayer.pauseVideo();
     GardenState.musicPlaying = false;
     updateMusicUI(false);
   } else {
     GardenState.userPaused = false;
-    if (audio) {
-      if (!GardenState.musicStarted) {
-        audio.currentTime = 30;
-        GardenState.musicStarted = true;
-      }
-      audio.play().then(() => {
-        GardenState.musicPlaying = true;
-        updateMusicUI(true);
-      }).catch(() => {
-        fallbackToYouTube();
-      });
+    if (ytPlayer && ytApiReady && !ytFailed) {
+      playYouTube();
     } else {
-      fallbackToYouTube();
+      playLocalAudio();
     }
   }
 }
-
 function updateMusicUI(isPlaying) {
   const btn = document.getElementById('music-toggle-btn');
   const label = document.getElementById('music-btn-label');
@@ -591,6 +574,10 @@ function updateMazeStats() {
   if (el) el.textContent = `${mazeState.itemsFound} / 3`;
 }
 
+const aneaImg = new Image();
+aneaImg.onload = () => { if (mazeState.ctx) renderMaze(); };
+aneaImg.src = 'assets/anea_girl.png';
+
 function renderMaze() {
   const { ctx, canvas, grid, cellSize, playerX, playerY } = mazeState;
   if (!ctx || !canvas) return;
@@ -631,7 +618,17 @@ function renderMaze() {
   }
 
   // Draw Player Character: anea
-  drawCurlyGirlCharacter(ctx, playerX * cellSize + cellSize / 2, playerY * cellSize + cellSize / 2, cellSize * 0.44);
+  const px = playerX * cellSize + cellSize / 2, py = playerY * cellSize + cellSize / 2;
+  if (aneaImg.complete && aneaImg.naturalWidth) {
+    const d = cellSize * 0.92;
+    ctx.save();
+    ctx.shadowColor = 'rgba(244, 234, 212, 0.7)';
+    ctx.shadowBlur = 8;
+    ctx.drawImage(aneaImg, px - d / 2, py - d / 2, d, d);
+    ctx.restore();
+  } else {
+    drawCurlyGirlCharacter(ctx, px, py, cellSize * 0.4);
+  }
 }
 
 function drawCollectibleStar(ctx, cx, cy, radius) {
@@ -679,176 +676,56 @@ function drawGardenGate(ctx, x, y, size) {
 
 function drawCurlyGirlCharacter(ctx, cx, cy, r) {
   ctx.save();
+  const skin = '#A8693E';
+  const hair = '#2A180C';
 
-  // 1. Natural Voluminous Soft Curls (Deep Espresso & Warm Highlights)
-  const hairDark = '#160E08';
-  const hairMid = '#29180E';
-  const hairHighlight = '#482F1D';
-
-  // Base Silhouette (Bouncy Curly Cloud)
-  ctx.fillStyle = hairDark;
-  ctx.beginPath();
-  ctx.arc(cx, cy - r * 0.15, r * 1.05, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Distinct Organic Curls Around Head
-  const curlOffsets = [
-    { dx: -r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
-    { dx: r * 0.95, dy: -r * 0.25, cr: r * 0.45 },
-    { dx: -r * 0.85, dy: r * 0.25, cr: r * 0.42 },
-    { dx: r * 0.85, dy: r * 0.25, cr: r * 0.42 },
-    { dx: -r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
-    { dx: r * 0.65, dy: -r * 0.75, cr: r * 0.44 },
-    { dx: 0, dy: -r * 0.95, cr: r * 0.48 },
-    { dx: -r * 0.4, dy: -r * 0.9, cr: r * 0.42 },
-    { dx: r * 0.4, dy: -r * 0.9, cr: r * 0.42 }
+  // Hair: a soft ring of curls hugging the head (sides + a little on top)
+  const curls = [
+    [-0.78, -0.1], [0.78, -0.1], [-0.8, 0.35], [0.8, 0.35],
+    [-0.6, -0.5], [0.6, -0.5], [-0.25, -0.68], [0.25, -0.68], [0, -0.72]
   ];
-
-  curlOffsets.forEach(c => {
-    ctx.fillStyle = hairDark;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx, cy + c.dy, c.cr, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = hairMid;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx * 0.88, cy + c.dy * 0.88, c.cr * 0.75, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = hairHighlight;
-    ctx.beginPath();
-    ctx.arc(cx + c.dx * 0.8, cy + c.dy * 0.8, c.cr * 0.35, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.fillStyle = hair;
+  curls.forEach(([dx, dy]) => {
+    ctx.beginPath(); ctx.arc(cx + dx * r, cy + dy * r, r * 0.34, 0, Math.PI * 2); ctx.fill();
   });
 
-  // 2. Golden Hoop Earrings
-  ctx.strokeStyle = '#D4A373';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.64, cy + r * 0.22, r * 0.14, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // 3. Cozy Olive Green Sweater with Cream Collar
+  // Body
   ctx.fillStyle = '#556934';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.92, r * 0.78, r * 0.42, 0, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx, cy + r * 0.98, r * 0.6, r * 0.34, 0, 0, Math.PI * 2); ctx.fill();
 
-  ctx.fillStyle = '#F4EAD4';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.65, r * 0.35, r * 0.16, 0, 0, Math.PI * 2);
-  ctx.fill();
+  // Face
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(cx, cy + r * 0.08, r * 0.6, 0, Math.PI * 2); ctx.fill();
 
-  // 4. Prettier Face Shape & Glowing Warm Chestnut Skin
-  const skinTone = '#834925';
-  ctx.fillStyle = skinTone;
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.08, r * 0.64, 0, Math.PI * 2);
-  ctx.fill();
+  // Fringe curls on forehead
+  ctx.fillStyle = hair;
+  [-0.32, 0, 0.32].forEach(dx => {
+    ctx.beginPath(); ctx.arc(cx + dx * r, cy - r * 0.5, r * 0.2, 0, Math.PI * 2); ctx.fill();
+  });
 
-  // 5. Delicate Baby Hair / Forehead Ringlets
-  ctx.strokeStyle = hairMid;
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.28, cy - r * 0.32, r * 0.12, 0, Math.PI);
-  ctx.stroke();
+  // Eyes
+  ctx.fillStyle = '#1A0E07';
+  [-1, 1].forEach(s => {
+    ctx.beginPath(); ctx.ellipse(cx + s * r * 0.22, cy + r * 0.1, r * 0.07, r * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+  });
 
-  // 6. Radiant Rosy-Peach Cheeks
-  ctx.fillStyle = 'rgba(218, 98, 76, 0.45)';
-  ctx.beginPath();
-  ctx.ellipse(cx - r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
-  ctx.ellipse(cx + r * 0.36, cy + r * 0.2, r * 0.18, r * 0.11, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 7. Delicate Arched Eyebrows
-  ctx.strokeStyle = '#2E1B10';
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.22, cy - r * 0.12, r * 0.15, 1.1 * Math.PI, 1.8 * Math.PI);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.22, cy - r * 0.12, r * 0.15, 1.2 * Math.PI, 1.9 * Math.PI);
-  ctx.stroke();
-
-  // 8. Gorgeous Anime/Chibi Sparkling Eyes with Eyelashes
-  // Left Eye
-  ctx.fillStyle = '#211208';
-  ctx.beginPath();
-  ctx.ellipse(cx - r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#8C5528';
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
-  ctx.fill();
-
-  ctx.strokeStyle = '#140903';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.23, cy - r * 0.01, r * 0.14, 1.1 * Math.PI, 1.8 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.arc(cx - r * 0.26, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
-  ctx.arc(cx - r * 0.20, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Right Eye
-  ctx.fillStyle = '#211208';
-  ctx.beginPath();
-  ctx.ellipse(cx + r * 0.23, cy + r * 0.05, r * 0.12, r * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#8C5528';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.23, cy + r * 0.12, r * 0.07, 0, Math.PI, true);
-  ctx.fill();
-
-  ctx.strokeStyle = '#140903';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.23, cy - r * 0.01, r * 0.14, 1.2 * Math.PI, 1.9 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.20, cy + r * 0.02, r * 0.045, 0, Math.PI * 2);
-  ctx.arc(cx + r * 0.26, cy + r * 0.10, r * 0.022, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 9. Charming Rosy Smile
-  ctx.strokeStyle = '#9E4633';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.25, r * 0.16, 0.2 * Math.PI, 0.8 * Math.PI);
-  ctx.stroke();
-
-  ctx.fillStyle = 'rgba(201, 95, 75, 0.65)';
-  ctx.beginPath();
-  ctx.arc(cx, cy + r * 0.26, r * 0.11, 0.2 * Math.PI, 0.8 * Math.PI);
-  ctx.fill();
-
-  // 10. Golden Jasmine Flower in Curls
-  ctx.fillStyle = '#D4A373';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.16, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#F4EAD4';
-  ctx.beginPath();
-  ctx.arc(cx + r * 0.62, cy - r * 0.58, r * 0.07, 0, Math.PI * 2);
-  ctx.fill();
+  // Blush + smile
+  ctx.fillStyle = 'rgba(224, 110, 90, 0.4)';
+  [-1, 1].forEach(s => {
+    ctx.beginPath(); ctx.ellipse(cx + s * r * 0.36, cy + r * 0.28, r * 0.12, r * 0.07, 0, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.strokeStyle = '#7A3426'; ctx.lineWidth = Math.max(1, r * 0.06); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(cx, cy + r * 0.3, r * 0.14, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
 
   ctx.restore();
 }
-
+function drawAvatarPortrait() {
+  const c = document.getElementById('anea-avatar-canvas');
+  if (!c) return;
+  const g = c.getContext('2d');
+  g.clearRect(0, 0, c.width, c.height);
+  drawCurlyGirlCharacter(g, c.width / 2, c.height * 0.46, c.width * 0.3);
+}
 function movePlayer(dx, dy) {
   if (GardenState.currentPhase !== 'maze') return;
 
@@ -1196,6 +1073,7 @@ function populatePhotoGallery() {
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   initAmbientFireflies();
+  drawAvatarPortrait();
   populatePhotoGallery();
 
   // Gift Box Click
