@@ -216,7 +216,6 @@ function onPlayerReady(event) {
 
 function onPlayerError() {
   ytFailed = true;
-  if (!GardenState.userPaused) playLocalAudio();
 }
 
 function onPlayerStateChange(event) {
@@ -246,34 +245,30 @@ function playYouTube() {
     ytPlayer.setVolume(100);
     if (!initialSeekDone) ytPlayer.seekTo(30, true);
     ytPlayer.playVideo();
-  } catch (e) {
-    ytFailed = true;
-    playLocalAudio();
-  }
+  } catch (e) {}
 }
 
-// Fallback: local copy of the song, also starting at 0:30
+// YouTube is only used if the local file can't play
+function fallbackToYouTube() {
+  if (ytPlayer && ytApiReady && !ytFailed) playYouTube();
+  else shouldPlayOnReady = true;
+}
+
+// Primary: local copy of the song (preloaded, so it starts instantly), from 0:30
 function playLocalAudio() {
   const audio = getAudioElement();
-  if (!audio) return;
+  if (!audio) { fallbackToYouTube(); return; }
   if (audio.currentTime < 30) audio.currentTime = 30;
   audio.play().then(() => {
     GardenState.musicStarted = true;
     GardenState.musicPlaying = true;
     updateMusicUI(true);
-  }).catch(() => {});
+  }).catch(() => fallbackToYouTube());
 }
 
 function startMusicPlayback() {
   GardenState.userPaused = false;
-  if (ytPlayer && ytApiReady && !ytFailed) {
-    playYouTube();
-    return;
-  }
-  shouldPlayOnReady = true;
-  setTimeout(() => {
-    if (!GardenState.musicStarted && !GardenState.userPaused) playLocalAudio();
-  }, 3000);
+  playLocalAudio();
 }
 
 function toggleMusic() {
@@ -287,11 +282,7 @@ function toggleMusic() {
     updateMusicUI(false);
   } else {
     GardenState.userPaused = false;
-    if (ytPlayer && ytApiReady && !ytFailed) {
-      playYouTube();
-    } else {
-      playLocalAudio();
-    }
+    playLocalAudio();
   }
 }
 function updateMusicUI(isPlaying) {
@@ -560,7 +551,7 @@ function initMazeGame() {
   mazeState.itemsFound = 0;
   updateMazeStats();
 
-  const containerWidth = Math.min(window.innerWidth - 64, 468);
+  const containerWidth = window.innerWidth <= 960 ? Math.min(window.innerWidth - 175, 468) : Math.min(window.innerWidth - 64, 468);
   const size = Math.floor(containerWidth / 13) * 13;
   mazeState.canvas.width = size;
   mazeState.canvas.height = size;
@@ -1093,6 +1084,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Local Audio Loop & State Listeners
   const audio = getAudioElement();
   if (audio) {
+    audio.addEventListener('loadedmetadata', () => { if (audio.currentTime < 30) audio.currentTime = 30; });
+    audio.load();
     audio.addEventListener('ended', () => {
       audio.currentTime = 30;
       audio.play();

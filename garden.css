@@ -1555,3 +1555,31 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ==========================================================================
+   MOBILE: controls beside the maze, compact 2-column gallery
+   ========================================================================== */
+@media (max-width: 960px) {
+  .maze-phase-container { padding: 6px 8px 40px; }
+  .maze-layout-row { flex-wrap: wrap; gap: 8px; align-items: center; }
+  .maze-board-card { order: 1; padding: 6px; }
+  .maze-controls-left { order: 2; min-width: 0; padding: 8px; flex: 0 0 auto; }
+  .dpad-title, .dpad-hint { display: none; }
+  .dpad-container { grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(3, 32px); gap: 4px; }
+  .dpad-btn { width: 32px; height: 32px; border-radius: 10px; }
+  .maze-side-panel { order: 3; width: 100%; max-width: none; flex-direction: row; gap: 8px; }
+  .maze-side-panel > * { flex: 1; padding: 10px; }
+  .character-avatar-large { width: 56px; height: 56px; margin-bottom: 4px; }
+  .character-desc { display: none; }
+  .maze-title { font-size: 1.6rem; }
+}
+
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .garden-memory-pavilion { padding: 20px 12px 24px; }
+  .polaroid-card { padding: 8px 8px 10px; }
+  .polaroid-caption { font-size: 0.78rem; margin-top: 8px; }
+  .polaroid-date { display: none; }
+  .garden-title { font-size: 1.9rem; }
+  .garden-subtitle { font-size: 0.98rem; }
+}
