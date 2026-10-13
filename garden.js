@@ -176,6 +176,12 @@ const GalleryPhotos = [
     date: "A special moment with Madi",
     caption: "Treasured video memory with Madi.",
     svgType: "video:assets/madi_video.mp4"
+  },
+  {
+    title: "Luna",
+    date: "A special moment with Luna",
+    caption: "A special moment with Luna",
+    svgType: "img:assets/luna.jpg"
   }
 ];
 
@@ -890,8 +896,13 @@ function getGalleryArtworkSVG(type, width, height) {
     if (width > 400) {
       return `<img class="lightbox-img" src="${src}" alt="" style="max-width:100%;max-height:65vh;object-fit:contain;display:block;" />`;
     }
-    // For ary.png focus on characters in the lower-middle area
-    const objPos = src.includes('ary.png') ? 'object-position: 45% 70%;' : 'object-position: center;';
+    // Focus centering for character photos in cards
+    let objPos = 'object-position: center;';
+    if (src.includes('ary.png')) {
+      objPos = 'object-position: 45% 70%;';
+    } else if (src.includes('luna.jpg')) {
+      objPos = 'object-position: 50% 50%;';
+    }
     return `<img class="polaroid-img" src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;${objPos}display:block;" />`;
   }
   switch (type) {
