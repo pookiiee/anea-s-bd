@@ -176,6 +176,12 @@ const GalleryPhotos = [
     date: "Special memory with Ary",
     caption: "Treasured moments and endless laughs together.",
     svgType: "img:assets/ary.png"
+  },
+  {
+    title: "Madi",
+    date: "A special moment with Madi",
+    caption: "Treasured video memory with Madi.",
+    svgType: "video:assets/madi_video.mp4"
   }
 ];
 
@@ -862,25 +868,37 @@ function openLightbox(index) {
 
 function closeLightboxModal() {
   const backdrop = document.getElementById('lightbox-modal-backdrop');
-  if (backdrop) backdrop.classList.remove('active');
+  if (backdrop) {
+    const video = backdrop.querySelector('video');
+    if (video) video.pause();
+    backdrop.classList.remove('active');
+  }
   document.body.style.overflow = '';
 }
 
-const ARY_CARD_FRAME = { 'assets/ary.png': 'background-size:cover;background-position:center;' };
-
 function getGalleryArtworkSVG(type, width, height) {
+  if (type.startsWith("video:")) {
+    const src = type.slice(6);
+    if (width > 400) {
+      return `<video class="lightbox-video" src="${src}" controls autoplay playsinline style="max-width:100%;max-height:65vh;display:block;outline:none;background:#000;"></video>`;
+    }
+    return `<div style="position:relative;width:100%;height:100%;overflow:hidden;background:#000;">
+      <video src="${src}#t=0.5" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;"></video>
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(212,163,115,0.9);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.5);">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#1A130E;margin-left:2px;"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+    </div>`;
+  }
   if (type.startsWith("img:")) {
     const src = type.slice(4);
-    // Zoomed card framing so both characters stay inside the square
-    const frame = ARY_CARD_FRAME[src];
-    if (frame && width <= 400) {
-      return `<div style="position:relative;width:100%;height:100%;overflow:hidden;">
-        <div style="position:absolute;inset:-12%;background:url(${src}) center/cover;filter:blur(14px);"></div>
-        <div style="position:absolute;inset:0;background:url(${src}) no-repeat;${frame}"></div>
-      </div>`;
+    if (width > 400) {
+      return `<img class="lightbox-img" src="${src}" alt="" style="max-width:100%;max-height:65vh;object-fit:contain;display:block;" />`;
     }
-    const fit = width > 400 ? "contain" : "cover";
-    return `<img class="polaroid-img" src="${type.slice(4)}" alt="" style="width:100%;height:100%;object-fit:${fit};" />`;
+    // For ary.png focus on characters in the lower-middle area
+    const objPos = src.includes('ary.png') ? 'object-position: 45% 70%;' : 'object-position: center;';
+    return `<img class="polaroid-img" src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;${objPos}display:block;" />`;
   }
   switch (type) {
     case 'grove':
@@ -1075,10 +1093,10 @@ function populatePhotoGallery() {
     card.onclick = () => openLightbox(idx);
 
     card.innerHTML = `
-      <div class="polaroid-img-wrapper${photo.svgType.startsWith('img:') ? ' square' : ''}">
+      <div class="polaroid-img-wrapper${(photo.svgType.startsWith('img:') || photo.svgType.startsWith('video:')) ? ' square' : ''}">
         ${getGalleryArtworkSVG(photo.svgType, 280, 210)}
         <div class="polaroid-zoom-overlay">
-          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <svg class="svg-icon" viewBox="0 0 24 24">${photo.svgType.startsWith('video:') ? '<path d="M8 5v14l11-7z"/>' : '<path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>'}</svg>
         </div>
       </div>
       <div class="polaroid-caption">${photo.title}</div>
