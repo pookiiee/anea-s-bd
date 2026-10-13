@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ==========================================================================
  * THE BIRTHDAY GARDEN - INTERACTION ENGINE
  * Features:
@@ -172,10 +172,10 @@ const GalleryPhotos = [
     svgType: "img:assets/wedding.jpg"
   },
   {
-    title: "ary",
-    date: "",
-    caption: "",
-    svgType: "img:assets/ary.webp"
+    title: "Ary",
+    date: "Special memory with Ary",
+    caption: "Treasured moments and endless laughs together.",
+    svgType: "img:assets/ary.png"
   }
 ];
 
@@ -866,7 +866,7 @@ function closeLightboxModal() {
   document.body.style.overflow = '';
 }
 
-const ARY_CARD_FRAME = { 'assets/ary.webp': 'background-size:173%;background-position:44% 55%;' };
+const ARY_CARD_FRAME = { 'assets/ary.png': 'background-size:cover;background-position:center;' };
 
 function getGalleryArtworkSVG(type, width, height) {
   if (type.startsWith("img:")) {
