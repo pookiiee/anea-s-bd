@@ -130,30 +130,6 @@ As you step into this new age, my prayer for you is boundless peace, divine prot
 // Gallery Keepsakes Data
 const GalleryPhotos = [
   {
-    title: "Olive Grove Golden Hour",
-    date: "Golden memories together",
-    caption: "Quiet evenings under the olive trees, laughing until our faces hurt.",
-    svgType: "grove"
-  },
-  {
-    title: "Late Night Teatime Talks",
-    date: "Warm cups & endless stories",
-    caption: "When minutes turned into hours and every secret felt safe.",
-    svgType: "tea"
-  },
-  {
-    title: "The Starlit Picnic",
-    date: "Under the summer constellations",
-    caption: "Blankets on the grass, cozy sweaters, and dreams whispered to the sky.",
-    svgType: "stars"
-  },
-  {
-    title: "Flower Crown Afternoons",
-    date: "Spring in full bloom",
-    caption: "Weaving wild daisies and moss blooms into silly little crowns.",
-    svgType: "blooms"
-  },
-  {
     title: "Laughter in the Soft Rain",
     date: "Dancing through misty puddles",
     caption: "Not caring that we were soaked, because we were together.",
