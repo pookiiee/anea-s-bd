@@ -175,7 +175,7 @@ const GalleryPhotos = [
     title: "Ary",
     date: "",
     caption: "",
-    svgType: "img:assets/ary.webp"
+    svgType: "img:assets/ary.jpg"
   }
 ];
 
