@@ -45,15 +45,10 @@ I love you more than words can carry.`
   ary: {
     name: "Ary",
     flowerName: "Sunlit Wild Daisy",
-    signoff: "Your biggest cheerleader & partner in chaos, Ary",
+    signoff: "Love, Ary",
     date: "October 2026",
-    letter: `Happiest of birthdays to the one who makes everything a thousand times brighter!
-
-Life with you is never dull. From the completely unhinged jokes that only the two of us find hilarious, to the impromptu debriefs about everything under the sun, you have been my constant source of joy and unfiltered laughter. 
-
-Thank you for being so effortlessly yourself. In a world full of people trying to fit into molds, you are completely genuine, unapologetically funny, and so fiercely loyal. You have this unmatched superpower of making people feel seen and valued, even when you're just joking around.
-
-I hope this year showers you with spontaneous adventures, answered prayers, good food, deep laughter that makes your stomach ache, and all the magical blessings you deserve. Keep shining like the brilliant soul you are!`
+    letter: `Hbd to my dearest mommy and the only one
+I love all of our memories and it was kinda hard to pick one, i hope ya loved this memory as much as I did along with the rest lovely memories I had with ya, a cherish every single one of em and I love em so much but ofc not as much as mommy, I love you to the moon and back (˶˃ ᵕ ˂˶)`
   },
 
   hiro: {
@@ -73,57 +68,35 @@ On your birthday, I pray that you receive all the gentle kindness you give so fr
   tuqa: {
     name: "Tuqa",
     flowerName: "Sparkling Meadow Bloom",
-    signoff: "Hugging you tightly from the heart, Tuqa",
+    signoff: "Love, Tuqa",
     date: "October 2026",
-    letter: `HAPPY BIRTHDAY TO MY SWEETEST GIRL!
-
-I hope today feels like the warmest hug! Every time I think of you, I picture your radiant smile and that infectious energy that lights up whatever space you're in. 
-
-You give so much love, patience, and attention to everyone around you. You celebrate our little wins like they are monumental, and you stand beside us when things get rough. That kind of generosity of spirit is a blessing, and I never take a single second of our friendship for granted.
-
-May this upcoming year be the chapter where every seed of hard work you planted blooms into something magnificent. May you be surrounded only by genuine love, gentle breezes, cozy evenings, and endless reasons to smile that wide, pure smile of yours. Happy birthday!`
+    letter: `Heyoo cutiee aneaa <33
+Happy birthdayy and I wish you have a wonderful year just like you. I love youu smm and I’m so glad that I had the chance to know you this year.
+You’re one of the most kindest and considerate ppl I met. I hope our friendship never ends and I’m really thankful for that day when we added each other by mistake <3`
   },
 
   luna: {
     name: "Luna",
     flowerName: "Starlight Moss Orchid",
-    signoff: "Under every moon and sky, Luna",
+    signoff: "Love, Luna ❤︎",
     date: "October 2026",
-    letter: `To my sweetest friend on her birthday,
-
-There is something so celestial about who you are. You look at the world with an artist's heart and a dreamer's mind. You notice the delicate beauty in quiet moments that most people rush right past, and that makes being in your orbit feel like poetry.
-
-Thank you for sharing your thoughts, your dreams, and your tender spirit with me. Knowing you has broadened the way I see kindness, patience, and love. You inspire me to be more mindful, more gentle with myself, and more appreciative of the little things in life.
-
-I hope your birthday wraps you in the coziest embrace. May your creative sparks burn brighter than ever, may you stumble upon beautiful surprises in unexpected places, and may the stars always guide your steps toward everything that fills your heart with wonder.`
+    letter: `Happy birthday to the best person i ever met hope your having the most wonderful birthday ever and hope you have a wonderful year ahead i may not really show it but i appreciate having you as a friend you helped me a lot even by just being there and i hope i did the same for you and don’t forget i am always here for you and the less hater club is too <3`
   },
 
   madi: {
     name: "Madi",
     flowerName: "Honey Meadow Jasmine",
-    signoff: "Forever grateful for you, Madi",
+    signoff: "Love, Madi",
     date: "October 2026",
-    letter: `Happy Birthday, my dear!
-
-Growing alongside you has been one of the greatest privileges of my life. From where we started to where we stand today, watching you flourish into such an inspiring, thoughtful, and resilient person has been an absolute honor.
-
-Thank you for the countless memories we've built, the reassuring texts at the exact right moment, and the mutual understanding that time and distance could never touch. You are the kind of friend someone only gets once in a lifetime, and I thank God every day that our paths crossed.
-
-I hope your birthday brings you pure, unadulterated happiness. May the year ahead bring doors swinging wide open for your aspirations, good health, and an abundance of sweet, peaceful moments that make you pause and say, 'life is good.'`
+    letter: `Happy Birthday my darlinggg, It’s been 4 years since we’ve met, and 4 years since we’ve been friends. ( ิ◕㉨◕ ิ)I can’t wait for the many more birthdays i’ll be able to count with you. You’re finally 24, an oldie like me, let us revel in our oldness. I really love and care about you, and am ever-so thankful that you will always be in my life as my dearest and closest friend (灬ºωº灬)`
   },
 
   reemy: {
     name: "Reemy",
     flowerName: "Golden Olive Lotus",
-    signoff: "With endless love & prayers, Reemy",
+    signoff: "Love, Reemy",
     date: "October 2026",
-    letter: `Happiest of birthdays to our radiant queen!
-
-Today we celebrate YOU—your elegance, your sharp wit, your generous heart, and the effortless way you carry yourself through life. You have an incredible gift for uplifting everyone around you while staying true to your own integrity.
-
-Whenever we gather, your laughter is the spark that brings everything to life. Thank you for the endless advice, the honest truth delivered with love, and the loyalty that never wavers. Having you in my corner makes me feel ten times braver.
-
-As you step into this new age, my prayer for you is boundless peace, divine protection, overflowing joy, and achievements that surpass even your wildest dreams. May your path always be lined with flowers and illuminated by joy. Love you so very much!`
+    letter: `Happy birthday to my partner in crime (in gta), my money launderer (in gta), my traffic eradicator (in gta). Reemy appreciates you a lot even tho we don't talk as often as we used to but you are always the person who id go to if i had some trouble or drama. A great friend to all, a big sister to me. I love you so so much Anea i always have good thoughts about you and always wish you the best, have a nice birthday.`
   }
 };
 
