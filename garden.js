@@ -854,7 +854,7 @@ function getGalleryArtworkSVG(type, width, height) {
     // Focus centering for character photos in cards
     let objPos = 'object-position: center;';
     if (src.includes('ary.png')) {
-      objPos = 'object-position: 45% 70%;';
+      objPos = 'object-position: 55% 65%;';
     } else if (src.includes('luna.jpg')) {
       objPos = 'object-position: 50% 50%;';
     } else if (src.includes('tuqa.jpg')) {
