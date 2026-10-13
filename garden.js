@@ -160,21 +160,15 @@ const GalleryPhotos = [
     svgType: "rain"
   },
   {
-    title: "Cozy Books & Warm Wool",
-    date: "Autumn reading sessions",
-    caption: "Quiet companionship where silence is just as sweet as conversation.",
-    svgType: "books"
-  },
-  {
     title: "Aseel",
-    date: "our wedding day",
-    caption: "our wedding day",
+    date: "A special moment with Aseel",
+    caption: "A special moment with Aseel",
     svgType: "img:assets/wedding.jpg"
   },
   {
     title: "Ary",
-    date: "Special memory with Ary",
-    caption: "Treasured moments and endless laughs together.",
+    date: "A special moment with Ary",
+    caption: "A special moment with Ary",
     svgType: "img:assets/ary.png"
   },
   {
