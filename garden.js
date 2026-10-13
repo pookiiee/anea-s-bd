@@ -182,6 +182,12 @@ const GalleryPhotos = [
     date: "A special moment with Luna",
     caption: "A special moment with Luna",
     svgType: "img:assets/luna.jpg"
+  },
+  {
+    title: "Tuqa",
+    date: "A special moment with Tuqa",
+    caption: "A special moment with Tuqa",
+    svgType: "img:assets/tuqa.jpg"
   }
 ];
 
@@ -902,6 +908,8 @@ function getGalleryArtworkSVG(type, width, height) {
       objPos = 'object-position: 45% 70%;';
     } else if (src.includes('luna.jpg')) {
       objPos = 'object-position: 50% 50%;';
+    } else if (src.includes('tuqa.jpg')) {
+      objPos = 'object-position: 50% 25%;';
     }
     return `<img class="polaroid-img" src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;${objPos}display:block;" />`;
   }
