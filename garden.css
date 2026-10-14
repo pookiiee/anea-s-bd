@@ -601,8 +601,8 @@ body {
 }
 
 .gift-box-wrapper.opened .gift-box-lid {
-  transform: translateY(-80px) rotate(-16deg) scale(0.95);
-  opacity: 0.85;
+  transform: translateY(-90px) rotate(-22deg) scale(0.92);
+  opacity: 0.9;
 }
 
 .gift-box-wrapper.opened .gift-box-shadow {

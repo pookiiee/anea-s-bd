@@ -11,7 +11,7 @@
  * ==========================================================================
  */
 
-// Global State with strict unlock tracking
+// Global State with sequential progression (locked until gift is opened)
 const GardenState = {
   currentPhase: 'gift', // 'gift', 'maze', 'garden'
   unlockedPhases: new Set(['gift']),
