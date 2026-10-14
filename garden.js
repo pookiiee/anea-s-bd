@@ -35,7 +35,7 @@ const FriendsLetters = {
     letterImage: "assets/birthday_girl_24.png",
     letter: `꒰ my beautiful anea 🎂⟡﹒﹒
 
-finally? your first birthday with me!! you have no idea how something so simple can mean so much to me. i’m genuinely so, so happy about it. i’m so happy that my love, my heart, my soul is celebrating her birthday, and i get to be there with her, celebrate her, make her happy, sing to her, and share her happiness ⠀૮ ∩´ ᵕ `∩ ྀིა
+finally? your first birthday with me!! you have no idea how something so simple can mean so much to me. i’m genuinely so, so happy about it. i’m so happy that my love, my heart, my soul is celebrating her birthday, and i get to be there with her, celebrate her, make her happy, sing to her, and share her happiness ⠀૮ ∩´ ᵕ \∩ ྀིა
 
 i love you so much, anea, and i’m so grateful for every little moment i’ve shared with you 🌺 ۫ ⑅
 
