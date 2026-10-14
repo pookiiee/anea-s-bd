@@ -58,6 +58,7 @@ I love all of our memories and it was kinda hard to pick one, i hope ya loved th
     flowerName: "Moonlit Night Lily",
     signoff: "❥Love always, Hiro",
     date: "October 2026",
+    youtubeVideo: "M_X6DGjlw4M",
     letter: `Happy Birthday, Anea! (ﾉ^ヮ^)ﾉ*:・ﾟ✧
 I am so incredibly happy to celebrate YOU today. Even though we met through a screen, our friendship means the absolute world to me. Whether we're teaming up in our games or just chatting, you always bring the absolute best energy. Thank you for the late-night talks, the endless laughs, and for being such an amazing friend every single day. I cherish every conversation and gaming session we share, and I'm so lucky to call you a friend. Wishing you a beautiful birthday filled with perfect moments and the best year ahead. ♡`
   },
@@ -466,19 +467,18 @@ function handleGiftOpen() {
 
   GardenState.boxOpened = true;
   wrapper.classList.add('opened');
-  launchBirthdayConfetti();
-  playAmbientChime();
 
   unlockPhase('maze');
   const stepGift = document.querySelector('.step-node[data-step="gift"]');
   if (stepGift) stepGift.classList.add('completed');
 
-  // Start music automatically from 0:30
-  startMusicPlayback();
+  try { launchBirthdayConfetti(); } catch(e) {}
+  try { playAmbientChime(); } catch(e) {}
+  try { startMusicPlayback(); } catch(e) {}
 
   setTimeout(() => {
     if (cta) cta.style.display = 'block';
-  }, 600);
+  }, 500);
 }
 
 // ==========================================================================
@@ -785,14 +785,37 @@ function openLetter(friendKey) {
   fromEl.textContent = `Letter from ${data.name}`;
   typeEl.textContent = `Blooming: ${data.flowerName}`;
   
+  let contentHtml = '';
   if (data.letterDecor) {
     const topDivider = `<div class="letter-decor-divider"><img src="${data.letterDecor}" alt="" /></div>`;
     const bottomDivider = `<div class="letter-decor-divider"><img src="${data.letterDecor}" alt="" /></div>`;
     const photoHtml = data.letterImage ? `<div class="letter-special-photo-wrap"><img src="${data.letterImage}" alt="" class="letter-special-photo" /></div>` : '';
-    bodyEl.innerHTML = `${topDivider}<div class="letter-text-content">${data.letter}</div>${bottomDivider}${photoHtml}`;
+    contentHtml = `${topDivider}<div class="letter-text-content">${data.letter}</div>${bottomDivider}${photoHtml}`;
   } else {
-    bodyEl.innerHTML = `<div class="letter-text-content">${data.letter}</div>`;
+    contentHtml = `<div class="letter-text-content">${data.letter}</div>`;
   }
+
+  if (data.youtubeVideo) {
+    contentHtml += `
+      <div class="letter-video-embed">
+        <div class="letter-video-title">
+          <svg class="svg-icon" style="width:16px;height:16px;color:var(--warm-gold);" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          <span>A Song For You</span>
+        </div>
+        <div class="letter-video-wrapper">
+          <iframe 
+            src="https://www.youtube-nocookie.com/embed/${data.youtubeVideo}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" 
+            title="Hiro Song" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    `;
+  }
+
+  bodyEl.innerHTML = contentHtml;
   
   signoffEl.textContent = data.signoff;
   dateEl.textContent = data.date;
@@ -803,7 +826,12 @@ function openLetter(friendKey) {
 
 function closeLetterModal() {
   const backdrop = document.getElementById('letter-modal-backdrop');
-  if (backdrop) backdrop.classList.remove('active');
+  if (backdrop) {
+    // Reset iframe to stop audio when modal is closed
+    const iframe = backdrop.querySelector('iframe');
+    if (iframe) iframe.src = '';
+    backdrop.classList.remove('active');
+  }
   document.body.style.overflow = '';
 }
 
