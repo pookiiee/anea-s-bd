@@ -58,7 +58,8 @@ I love all of our memories and it was kinda hard to pick one, i hope ya loved th
     flowerName: "Moonlit Night Lily",
     signoff: "❥Love always, Hiro",
     date: "October 2026",
-    youtubeVideo: "M_X6DGjlw4M",
+    audioFile: "assets/hiro_song.mp3",
+    audioTitle: "A Parallel World (BINI) 🎵",
     letter: `Happy Birthday, Anea! (ﾉ^ヮ^)ﾉ*:・ﾟ✧
 I am so incredibly happy to celebrate YOU today. Even though we met through a screen, our friendship means the absolute world to me. Whether we're teaming up in our games or just chatting, you always bring the absolute best energy. Thank you for the late-night talks, the endless laughs, and for being such an amazing friend every single day. I cherish every conversation and gaming session we share, and I'm so lucky to call you a friend. Wishing you a beautiful birthday filled with perfect moments and the best year ahead. ♡`
   },
@@ -795,6 +796,23 @@ function openLetter(friendKey) {
     contentHtml = `<div class="letter-text-content">${data.letter}</div>`;
   }
 
+  if (data.audioFile) {
+    contentHtml += `
+      <div class="letter-audio-embed">
+        <div class="letter-audio-info">
+          <div class="letter-audio-icon">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div>
+            <div class="letter-audio-title">${data.audioTitle || 'Voice Message / Song'}</div>
+            <div class="letter-audio-subtitle">Tap play to listen</div>
+          </div>
+        </div>
+        <audio class="letter-audio-player" controls preload="auto" src="${data.audioFile}"></audio>
+      </div>
+    `;
+  }
+
   if (data.youtubeVideo) {
     contentHtml += `
       <div class="letter-video-embed">
@@ -827,6 +845,12 @@ function openLetter(friendKey) {
 function closeLetterModal() {
   const backdrop = document.getElementById('letter-modal-backdrop');
   if (backdrop) {
+    // Stop any playing letter audio
+    const letterAudio = backdrop.querySelector('audio');
+    if (letterAudio) {
+      letterAudio.pause();
+      letterAudio.currentTime = 0;
+    }
     // Reset iframe to stop audio when modal is closed
     const iframe = backdrop.querySelector('iframe');
     if (iframe) iframe.src = '';
