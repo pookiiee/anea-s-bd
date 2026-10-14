@@ -29,17 +29,19 @@ const FriendsLetters = {
   aseel: {
     name: "Aseel",
     flowerName: "Velvet Olive Peony",
-    signoff: "Forever your safe haven, Aseel",
+    signoff: "⎯⎯͟͟ৎ𝄢⡴　.　 ࣪　muah, Aseel",
     date: "October 2026",
-    letter: `My dearest,
+    letterDecor: "assets/divider.png",
+    letterImage: "assets/birthday_girl_24.png",
+    letter: `꒰ my beautiful anea 🎂⟡﹒﹒
 
-Happy Birthday! Looking back on every single laugh, every midnight confession, and all the silent moments where we didn't even need words to understand one another, my heart overflows with gratitude.
+finally? your first birthday with me!! you have no idea how something so simple can mean so much to me. i’m genuinely so, so happy about it. i’m so happy that my love, my heart, my soul is celebrating her birthday, and i get to be there with her, celebrate her, make her happy, sing to her, and share her happiness ⠀૮ ∩´ ᵕ `∩ ྀིა
 
-You bring such a rare and steady kind of warmth into this world—the kind of gentleness that softens even the heaviest days. Whenever things get overwhelming, just talking to you reminds me of who I am. You have this quiet strength, this golden kindness, and an authenticity that everyone around you can feel the moment you walk into the room.
+i love you so much, anea, and i’m so grateful for every little moment i’ve shared with you 🌺 ۫ ⑅
 
-In this brand-new chapter of your life, I wish you endless mornings full of peace, dreams that unfold effortlessly before your eyes, and people who cherish your heart as deeply as you cherish theirs. May your days be painted in your favorite calm colors, and may you never forget how profoundly proud I am of the woman you are becoming.
+i can’t even begin to explain how you’ve been someone so different from everyone else in my life. you’ve been a sister, a friend, a mother, and everything i ever needed and felt was missing. you completed all those little pieces of me that i didn’t even know were missing. i love you more than words could ever explain  ೀ
 
-I love you more than words can carry.`
+happy birthday, my love. i hope you’re always happy, always smiling, and that sadness never finds its way into your life. you deserve all the happiness in this world and so much more. may every year of your life be filled with love, laughter, and beautiful moments. i hope i get to celebrate so many more birthdays with you. i love you endlessly, anea ⑅ 𓏼ׁ ׅ⠀`
   },
 
   ary: {
@@ -54,15 +56,10 @@ I love all of our memories and it was kinda hard to pick one, i hope ya loved th
   hiro: {
     name: "Hiro",
     flowerName: "Moonlit Night Lily",
-    signoff: "With everlasting peace & affection, Hiro",
+    signoff: "❥Love always, Hiro",
     date: "October 2026",
-    letter: `Happy Birthday, beautiful soul.
-
-If our friendship was a garden, you would be the ancient willow tree—the place where everyone comes to catch their breath, rest under the shade, and feel understood without any judgment.
-
-Your presence has this grounding, soothing grace that is so rare to find. Thank you for listening to my thoughts even when they were tangled and messy, for offering clarity when everything felt cloudy, and for showing me what true, unconditional friendship looks like.
-
-On your birthday, I pray that you receive all the gentle kindness you give so freely to others. May this year grant you deep inner quietude, healthy boundaries, inspiring opportunities, and quiet little pockets of happiness in every ordinary day. You deserve the absolute world.`
+    letter: `Happy Birthday, Anea! (ﾉ^ヮ^)ﾉ*:・ﾟ✧
+I am so incredibly happy to celebrate YOU today. Even though we met through a screen, our friendship means the absolute world to me. Whether we're teaming up in our games or just chatting, you always bring the absolute best energy. Thank you for the late-night talks, the endless laughs, and for being such an amazing friend every single day. I cherish every conversation and gaming session we share, and I'm so lucky to call you a friend. Wishing you a beautiful birthday filled with perfect moments and the best year ahead. ♡`
   },
 
   tuqa: {
@@ -103,10 +100,10 @@ You’re one of the most kindest and considerate ppl I met. I hope our friendshi
 // Gallery Keepsakes Data
 const GalleryPhotos = [
   {
-    title: "Laughter in the Soft Rain",
-    date: "Dancing through misty puddles",
-    caption: "Not caring that we were soaked, because we were together.",
-    svgType: "rain"
+    title: "Hiro",
+    date: "A special moment with Hiro",
+    caption: "A special moment with Hiro",
+    svgType: "img:assets/hiro.png"
   },
   {
     title: "Aseel",
@@ -787,7 +784,16 @@ function openLetter(friendKey) {
 
   fromEl.textContent = `Letter from ${data.name}`;
   typeEl.textContent = `Blooming: ${data.flowerName}`;
-  bodyEl.textContent = data.letter;
+  
+  if (data.letterDecor) {
+    const topDivider = `<div class="letter-decor-divider"><img src="${data.letterDecor}" alt="" /></div>`;
+    const bottomDivider = `<div class="letter-decor-divider"><img src="${data.letterDecor}" alt="" /></div>`;
+    const photoHtml = data.letterImage ? `<div class="letter-special-photo-wrap"><img src="${data.letterImage}" alt="" class="letter-special-photo" /></div>` : '';
+    bodyEl.innerHTML = `${topDivider}<div class="letter-text-content">${data.letter}</div>${bottomDivider}${photoHtml}`;
+  } else {
+    bodyEl.innerHTML = `<div class="letter-text-content">${data.letter}</div>`;
+  }
+  
   signoffEl.textContent = data.signoff;
   dateEl.textContent = data.date;
 
@@ -855,6 +861,8 @@ function getGalleryArtworkSVG(type, width, height) {
     let objPos = 'object-position: center;';
     if (src.includes('ary.png')) {
       objPos = 'object-position: 52% 65%;';
+    } else if (src.includes('hiro.png')) {
+      objPos = 'object-position: 50% 50%;';
     } else if (src.includes('luna.jpg')) {
       objPos = 'object-position: 50% 50%;';
     } else if (src.includes('tuqa.jpg')) {

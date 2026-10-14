@@ -1414,8 +1414,46 @@ body {
   font-size: 1.05rem;
   line-height: 1.85;
   color: var(--text-main);
-  white-space: pre-line;
   font-weight: 400;
+}
+
+.letter-text-content {
+  white-space: pre-line;
+}
+
+.letter-decor-divider {
+  text-align: center;
+  margin: 18px auto;
+  opacity: 0.85;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.letter-decor-divider img {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.letter-special-photo-wrap {
+  margin: 22px auto 6px;
+  text-align: center;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-highlight);
+  background: var(--bg-surface-elevated);
+  padding: 8px;
+}
+
+.letter-special-photo {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  display: block;
 }
 
 .letter-footer {
