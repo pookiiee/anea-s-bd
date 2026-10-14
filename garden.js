@@ -29,7 +29,7 @@ const FriendsLetters = {
   aseel: {
     name: "Aseel",
     flowerName: "Velvet Olive Peony",
-    signoff: "⎯⎯͟͟ৎ𝄢⡴　.　 ࣪　muah, Aseel",
+    signoff: "love, Aseel",
     date: "October 2026",
     letterDecor: "assets/divider.png",
     letterImage: "assets/birthday_girl_24.png",
@@ -41,7 +41,7 @@ i love you so much, anea, and i’m so grateful for every little moment i’ve s
 
 i can’t even begin to explain how you’ve been someone so different from everyone else in my life. you’ve been a sister, a friend, a mother, and everything i ever needed and felt was missing. you completed all those little pieces of me that i didn’t even know were missing. i love you more than words could ever explain  ೀ
 
-happy birthday, my love. i hope you’re always happy, always smiling, and that sadness never finds its way into your life. you deserve all the happiness in this world and so much more. may every year of your life be filled with love, laughter, and beautiful moments. i hope i get to celebrate so many more birthdays with you. i love you endlessly, anea ⑅ 𓏼ׁ ׅ⠀`
+happy birthday, my love. i hope you’re always happy, always smiling, and that sadness never finds its way into your life. you deserve all the happiness in this world and so much more. may every year of your life be filled with love, laughter, and beautiful moments. i hope i get to celebrate so many more birthdays with you. i love you endlessly, anea ⑅`
   },
 
   ary: {
@@ -804,8 +804,8 @@ function openLetter(friendKey) {
         </div>
         <div class="letter-video-wrapper">
           <iframe 
-            src="https://www.youtube-nocookie.com/embed/${data.youtubeVideo}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" 
-            title="Hiro Song" 
+            src="https://www.youtube.com/embed/${data.youtubeVideo}" 
+            title="A Song For You" 
             frameborder="0" 
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
             allowfullscreen>
